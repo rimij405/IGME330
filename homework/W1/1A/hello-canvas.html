@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>Hello Canvas - Ian Effendi - IGME 330</title>
+    <link href="https://fonts.googleapis.com/css?family=Indie+Flower" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Lobster" rel="stylesheet" />
+	<style type="text/css">
+    #fontLoader {
+        height: 0;
+        width: 0;
+        overflow: hidden;
+    }
+    #indie {
+        font-family: 'Indie Flower', cursive;
+    }
+    #lobster {
+        font-family: 'Lobster', cursive;
+    }
+	canvas{
+		border:1px solid gray;
+	}
+	</style>
+	<script>
+		// #0 - In this course we will always use ECMAScript 5's "strict" mode
+		// See what 'use strict' does here:
+		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions_and_function_scope/Strict_mode
+		'use strict';
+		
+		// #1 call the init function after the pages loads
+		// this is called an "event handler"
+		window.onload = init;
+	
+		function init(){
+            
+            // Create a constant canvas object.
+            const Color = {
+                red: 'red',
+                white: 'white',
+                black: '#212122',
+                background: '#cc0004',
+                primary: '#ddccff',
+                secondary: '#ddffcc',
+            };
+            
+			// #2 Now that the page has loaded, start drawing!
+			console.log('init called');
+			
+			// A - canvas variable points at <canvas> tag
+		    let canvas = document.querySelector('canvas');
+			
+			// B - the ctx variable points at a "2D drawing context"
+			let context = canvas.getContext('2d');
+			
+			// Change the color of the background.
+			context.fillStyle = Color.background;
+			
+			// D - fill a rectangle with the current fill color
+			context.fillRect(0, 0, 640, 480);
+			
+			// E - set the current font
+			context.font = 'italic 40pt Lobster';
+			
+			// F - change the current fill color
+			context.fillStyle = Color.primary;
+            
+            // Save the context.
+            context.save();
+            
+            // Add shadow properties.
+            context.shadowColor = Color.black;
+            context.shadowOffsetX = 0;
+            context.shadowOffsetY = 0;
+            context.shadowBlur = 30;
+            
+            // Align text.
+            // context.textAlign = 'center';
+            // context.textBaseline = 'middle';
+			
+			// G - draw and fill text using current fill color
+            context.save();
+            
+            context.fillStyle = Color.black;
+			context.fillText('Ian Effendi', 178, 123);
+            
+            context.restore();            
+			context.fillText('Ian Effendi', 175, 120);
+            
+            // Add IGM in different place, font, and color.
+            context.font = 'italic 12pt Georgia';
+            context.fillStyle = Color.black;
+            context.fillText('IGME 330', 188, 138);
+            context.fillStyle = Color.secondary;
+            context.fillText('IGME 330', 185, 135);
+            
+            // Add squares.
+			context.fillStyle = Color.primary;
+            context.fillRect(10, 10, 50, 50);
+            context.fillRect(65, 65, 80, 80);
+                        
+            // Restore it.
+            context.restore();
+                        
+            // 0, 300, 640, 300
+            // 600, 0, 600, 640
+            let drawLine = function(context, x1, y1, x2, y2, col = 'white', thickness = 7) {
+                // Add lines.
+                context.strokeStyle = col;
+                context.lineWidth = thickness;            
+                context.beginPath();
+                context.moveTo(x1, y1);
+                context.lineTo(x2, y2);
+                context.closePath();
+                context.stroke();                
+            };
+                      
+            // Draw a horizontal line.
+            let drawHorizontalLine = function(context, x1, y1, length, col = 'white', thickness = 7) {
+                drawLine(context, x1, y1, x1 + length, y1, col, thickness);                
+            };
+            
+            // Draw a veritcal line.
+            let drawVerticalLine = function(context, x1, y1, length, col = 'white', thickness = 7) {
+                drawLine(context, x1, y1, x1, y1 + length, col, thickness);                             
+            };
+            
+            let drawParallelLines = function(context, x1, y1, horizontal = true, col = 'white', thickness = 7, numOfLines = 1, space = 10){
+                let drawCall = drawHorizontalLine;
+                if(horizontal !== true){
+                    drawCall = drawVerticalLine;
+                }                
+                
+                let xx = x1;
+                let yx = y1;
+                
+                for(let x = 0; x < numOfLines; x++) {                    
+                    if(horizontal === true) 
+                    { 
+                        yx += space; 
+                    } 
+                    else 
+                    {
+                        xx += space;    
+                    }      
+                    drawCall(context, xx, yx, 680, col, thickness);
+                }
+            };
+            
+            // drawHorizontalLine(context, 0, 300, 640);
+            // drawVerticalLine(context, 600, 0, 480, Color.black);
+            
+            drawParallelLines(context, 0, 300, true, Color.red, 5, 15, 24);
+            drawParallelLines(context, 0, 302, true, Color.secondary, 5, 15, 24);
+            drawParallelLines(context, 450, 0, false, Color.black, 5, 15, 24);
+            drawParallelLines(context, 435, 0, false, Color.primary, 5, 15, 24);
+            drawParallelLines(context, 0, 317, true, Color.white, 5, 15, 24);
+            drawParallelLines(context, 0, 318, true, Color.black, 5, 15, 24);
+                        
+            drawLine(context, 100, 200, 145, 245, Color.secondary, 3);
+            drawLine(context, 145, 245, 100, 245, Color.secondary, 3);
+            drawLine(context, 100, 245, 100, 200, Color.secondary, 3);
+            
+            drawLine(context, 100, 200, 145, 245, Color.black, 2);
+            drawLine(context, 145, 245, 100, 245, Color.black, 2);
+            drawLine(context, 100, 245, 100, 200, Color.black, 2);
+            
+            drawLine(context, 103, 197, 148, 242, Color.secondary, 3);
+            drawLine(context, 148, 242, 148, 197, Color.secondary, 3);
+            drawLine(context, 148, 197, 103, 197, Color.secondary, 3);
+            
+            drawLine(context, 103, 197, 148, 242, Color.black, 2);
+            drawLine(context, 148, 242, 148, 197, Color.black, 2);
+            drawLine(context, 148, 197, 103, 197, Color.black, 2);
+              
+			/*
+			Make your version different:
+
+			i) Change the yellow rectangle to a different solid color.
+
+			ii) Change the text to your name, and change the color of the text to 
+			something else. Note: Color can be specified in any legal CSS way, 
+			i.e. pre-defined keyword, hex, shorthand hex, RGB value, RGB percentage, RGBA,
+			 or even HSL
+			http://www.w3schools.com/cssref/css_colors_legal.asp
+
+
+			iii) Change the font of your name to something else. If you know how to embed
+			 web fonts, find something here and use it: http://www.google.com/fonts
+
+			iv) Add another line of text that reads “IGM”. Make sure that this text
+			 appears in a different color and font than your name did.
+
+			v) Add two squares to your canvas (50 x 50  or so) using 
+			ctx.fillRect(x,y,width,height)- and make sure that the square color is the 
+			same as the first text you 
+			drew (your name).
+
+			*/
+		}
+	</script>
+</head>
+<body>
+	<canvas width="640" height="480">
+		Get a real browser!
+		<!-- The user will only see the above text if their browser is older and doesn't support <canvas> -->
+	</canvas>
+    <div id="fontLoader">
+        <p id="indie">Indie Font</p>
+        <p id="lobster">Lobster Font</p>
+    </div>
+</body>
+</html>
