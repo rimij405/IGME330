@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>IGME 330: Smiley - Ian Effendi</title>
+	<style type="text/css">
+	body{
+		background: #dddddd;
+ 	}
+
+	canvas{
+		background: #ffffff;
+		cursor: pointer;
+		margin-left: 10px;
+		margin-top: 10px;
+		box-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+ 	}
+	
+	</style>
+	
+	<script>
+		"use strict";
+		// #1 - wait for page to load
+		window.onload = init; 
+		
+		function init(){
+			console.log("init() called");
+			// #2 - get pointer to <canvas> element on page
+			var canvas = document.querySelector('canvas');
+			
+			// #3 - get pointer to "drawing context" and drawing API
+			var ctx = canvas.getContext('2d');
+			
+			/* #4 - start drawing! */            
+            
+            // Draw the sky.
+            ctx.fillStyle = '#7EC0EE';
+            ctx.fillRect(0, 0, 750, 300);
+            
+            // Draw the sun.
+            ctx.lineWidth = 2;
+            ctx.fillStyle = 'yellow';
+            ctx.beginPath();
+            ctx.arc(700, 25, 50, 0, Math.PI * 2, true);
+            ctx.fill();
+            
+            // Draw the horizon line.
+            ctx.moveTo(0, 250);
+            ctx.lineTo(750, 250);
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 5;
+            ctx.stroke();
+            
+			// Draw the ground.
+            ctx.fillStyle = '#98FB98';
+            ctx.fillRect(0, 253, 750, 300);
+            
+            // Draw the tree trunk.
+            ctx.fillStyle = 'brown';
+            ctx.fillRect(45, 200, 15, 100);
+            
+            // Draw the tree.
+            ctx.moveTo(50, 100);
+            ctx.beginPath();
+            ctx.lineTo(75, 235);
+            ctx.lineTo(25, 235);
+            ctx.lineTo(50, 100);
+            ctx.fillStyle = 'green';
+            ctx.lineWidth = 3;
+            ctx.fill();
+            
+            // Draw the smiley outline.
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(375, 250, 200, 0, Math.PI * 2, false);
+            ctx.stroke();
+            
+            // Draw the smiley.
+            ctx.fillStyle = 'gold';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(375, 250, 200, 0, Math.PI * 2, false);
+            ctx.fill();
+            
+            // Draw the smiley's left eye.
+            ctx.fillStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(275, 225, 35, 0, Math.PI * 2, false);
+            ctx.fill();
+            
+            ctx.fillStyle = 'black';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(265, 215, 15, 0, Math.PI * 2, false);
+            ctx.fill();
+            
+            // Draw the smiley's right eye.
+            ctx.fillStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(475, 225, 35, 0, Math.PI * 2, false);
+            ctx.fill();
+            
+            ctx.fillStyle = 'black';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(475, 235, 15, 0, Math.PI * 2, false);
+            ctx.fill();
+            
+            // Draw the smiley's mouth.            
+            ctx.fillStyle = 'black';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(370, 275, 105, 0, Math.PI, false);
+            ctx.fill();
+			
+		}
+		
+		console.log("In bottom of <script> tag!");
+	</script>
+	
+</head>
+<body>
+	<canvas width="750" height="500">
+         Get a browser that supports Canvas!
+         <!-- The user will only see the above text if their browser is older and doesn't support <canvas> -->
+	
+      </canvas>
+</body>
+</html>
