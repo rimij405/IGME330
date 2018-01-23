@@ -52,28 +52,51 @@
 
 			// row 1
 			ctx.fillStyle = 'blue'; 
-			for (var i=0;i<7;i++){
+			for (let i = 0; i < 7; i++){
 				ctx.fillRect(10 + i * 100,20,50,50);
 			} 
-			ctx.save();
             
 			// row 2
-            ctx.fillStyle = 'red';
-			for (var i=0;i<7;i++){
-                ctx.fillStyle = `rgba(255, 0, 0, ${0.1 * (7 - i)})`;
+			for (let i = 0; i < 9; i++){
+                ctx.fillStyle = `rgba(255, 0, 0, ${0.1 * (9 - i)})`;
                 ctx.beginPath();
-				ctx.arc(25 + i * 100, 200, 20, 0, Math.PI * 2, false);
+				ctx.arc(30 + i * 75, 180, 20, 0, Math.PI * 2, false);
                 ctx.fill();
-			} 			
+			} 		
             
 			// row 3
-			
+			ctx.fillStyle = 'yellow';     
+			for (let i=0;i<7;i++){                
+                ctx.save();
+                ctx.translate(40 + i * 100, 300);
+                ctx.rotate(45 * Math.PI / 180);
+				ctx.fillRect(0, 0, 50, 50);
+                ctx.restore();
+			} 
 			
 			// row 4
-			
-			
-			
+			function drawTriangle(x = 0, y = 0, size = 100, color = 'black')
+            {
+                ctx.save();
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.moveTo(x + size, y + size);
+                ctx.lineTo(x, y + size);
+                ctx.lineTo(x + (size / 2), y);
+                ctx.fill();
+                ctx.restore();
+            }
+            
+			for (let i = 0; i < 7; i++){
+                drawTriangle(10 + i * 100, 420, 50, `rgb(${Math.floor(255 * (i / 7))}, 0, 0)`);
+            }
+                        
 			// watermark
+            ctx.fillStyle = 'rgba(105, 105, 105, 0.2)';
+            ctx.font = '100pt Courier';
+            ctx.translate(100, 50);
+            ctx.rotate(45 * Math.PI / 180);
+            ctx.strokeText("IGME-330", 0, 0);
 			
 
 		}
