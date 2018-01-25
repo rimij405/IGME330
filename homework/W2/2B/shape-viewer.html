@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>Shape Viewer!</title>
+	<style type="text/css">
+        html {
+            margin: 0px;
+            padding: 0px;
+            line-height: 1.15;
+        }
+        
+        body {
+            margin: 15px 35px;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        
+        #controls {
+            margin: 0px auto;
+            text-align: center;
+        }
+        
+        canvas{
+            display: block;
+            border:1px solid gray;
+            margin: 10px auto;
+            box-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+        }
+        
+        canvas:hover {
+            cursor: cell;
+        }
+
+        button{
+            margin-left:2em;
+            margin-top:1em;
+            width:100px;
+            height:40px;
+            font-size:18px;
+        }
+        
+        button:hover {
+            cursor: pointer;
+        }
+
+        li {
+            margin-top: 0px;
+            margin-bottom: 5px;
+            padding: 15px;
+            list-style: georgian;
+            background: #ddd;
+            transition: background 0.3s ease,
+                margin 0.3s ease;
+        }
+        
+        li:hover {
+            margin-top: 15px;
+            margin-bottom: 15px;
+            cursor: cell;
+            background: #fff;
+            transition: background 0.3s ease,
+                margin 0.3s ease;
+        }
+                
+	</style>
+	
+	<script>
+		// #0 - in this class we will always use ECMAScript 5's "strict" mode
+		// See what 'use strict' does here:
+		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions_and_function_scope/Strict_mode
+		'use strict';
+		
+		// #1 call the init function after the pages loads
+		// this is called an "event handler"
+		window.onload = init;
+	
+		var ctx;
+		function init(){
+			// #2 Now that the page has loaded, start drawing!
+			console.log('init called');
+			
+			// A - canvas variable points at <canvas> tag
+            let canvas = document.querySelector('canvas');
+			
+			// B - the ctx variable points at a "2D drawing context"
+			ctx = canvas.getContext('2d');	
+			
+			// C - all fill operations are now in yellow
+			ctx.fillStyle = 'yellow'; 
+			
+			// D - fill a rectangle covering the entire canvas with the current fill color
+			ctx.fillRect(0,0,500,300); 
+			
+			// #3 Hook up buttons
+            let redButton = document.querySelector('#red')
+			redButton.onclick = drawBox; // drawRed;
+			
+			// or do it as a 1-liner
+			document.querySelector('#green').onclick = drawBox; // drawGreen;
+			document.querySelector('#blue').onclick = drawBox; // drawBlue;
+            document.querySelector('#triangle').onclick = drawTriangle;
+            document.querySelector('#circle').onclick = drawCircle;
+            document.querySelector('#clear').onclick = clear;
+		
+		}
+        
+        // Use the event target property to access button properties.
+        function drawBox(e) {
+            let color = e.target.dataset.color;
+            
+            if(color !== undefined) {
+                // Save the previous operation.            
+                ctx.save();
+
+                // Clear the canvas.
+                clear();
+
+                // all fill operations are now selected color.
+                ctx.fillStyle = color;  
+
+                // fill a rectangle with the current fill color
+                ctx.fillRect(20,20,460,260); 
+
+                // Restore context to operation as before function call.            
+                ctx.restore();
+            }            
+        }
+		
+        /*
+		function drawRed() {            
+            // Save the previous operation.            
+            ctx.save();
+            
+            // Clear the canvas.
+            clear();
+            
+			// all fill operations are now in red
+			ctx.fillStyle = 'red';  
+			
+			// fill a rectangle with the current fill color
+			ctx.fillRect(20,20,460,260); 
+            
+            // Restore context to operation as before function call.            
+			ctx.restore();
+		}
+		
+		function drawGreen() {
+            // Save the previous operation.            
+            ctx.save();
+            
+            // Clear the canvas.
+            clear();
+            
+            // Set fill operation to green.
+            ctx.fillStyle = "#00FF00";
+            
+            // Create a filled rectangle with the current fill color.
+            ctx.fillRect(20, 20, 460, 260);
+            
+            // Restore context to operation as before function call.            
+			ctx.restore();
+		}
+        
+		function drawBlue() {
+            // Save the previous operation.            
+            ctx.save();
+            
+            // Clear the canvas.
+            clear();
+            
+            // Set fill operation to blue.
+            ctx.fillStyle = "#0000FF";
+            
+            // Create a filled rectangle with the current fill color.
+            ctx.fillRect(20, 20, 460, 260);
+            
+            // Restore context to operation as before function call.            
+			ctx.restore();
+		} */
+        
+        function drawTriangle() {
+            // Save the previous operation.            
+            ctx.save();
+            
+            // Clear the canvas.
+            clear();
+            
+            // Draw triangle.
+            ctx.beginPath();
+            ctx.moveTo(200, 200);
+            ctx.lineTo(300, 200);
+            ctx.lineTo(250, 100);
+            ctx.lineTo(200, 200);
+            ctx.closePath();
+                        
+            // Set fill operation to magenta.
+            ctx.fillStyle = "#FF00FF";
+            
+            // Fill path.
+            ctx.fill();            
+            
+            // Stroke width.
+            ctx.lineWidth = '10';
+            
+            // Stroke color.
+            ctx.strokeStyle = '#00FF00';            
+                                
+            // Stroke path.
+            ctx.stroke();
+            
+            // Restore context to operation as before function call.            
+			ctx.restore();
+            
+        }
+        
+        function drawCircle() {
+            
+            // Save the previous operation.            
+            ctx.save();
+            
+            // Clear the canvas.
+            clear();
+            
+            // Draw triangle.
+            ctx.beginPath();
+            ctx.arc(250, 150, 100, 0, Math.PI * 2, false);
+            ctx.closePath();
+                        
+            // Set fill operation to purple.
+            ctx.fillStyle = "#A020F0";
+            
+            // Fill path.
+            ctx.fill();            
+            
+            // Stroke width.
+            ctx.lineWidth = '5';
+            
+            // Stroke color.
+            ctx.strokeStyle = '#FFF';            
+                                
+            // Stroke path.
+            ctx.stroke();
+            
+            // Restore context to operation as before function call.            
+			ctx.restore();
+                          
+        }
+        
+        function clear() 
+        {
+            // Save the previous operation.            
+            ctx.save();
+            
+			// All fill operations are now in yellow
+			ctx.fillStyle = 'yellow'; 
+			
+			// Fill a rectangle covering the entire canvas with the current fill color
+			ctx.fillRect(0,0,500,300);
+            
+            // Restore context to operation as before function call.            
+			ctx.restore();  
+        }
+        
+        
+		
+	</script>
+</head>
+<body>
+	<canvas width="500" height="300">
+		Get a real browser!
+	</canvas>
+	
+	<section id="controls">
+		<button id="red" data-color="#FF0000" >Fill Red</button>
+		<button id="green" data-color="#00FF00" >Fill Green</button>
+		<button id="blue" data-color="#0000FF" >Fill Blue</button>
+		<button id="triangle">Triangle</button>
+		<button id="circle">Circle</button>
+		<button id="clear">Clear</button>
+	</section>
+	
+	
+	<h2>Shape Viewer!</h2>
+	<section id="assignment">
+	<p>If you don't know how to do any of these off the top of your head, use the Interwebs or our book to find out.</p>
+		<ol>
+			<li>(10%) Create a new style rule that will increase the vertical space between <code>&lt;li&gt;</code> tags on the page - try setting the <code>margin-bottom</code> property.</li>
+			<li>(20%) Get the "Fill Green" button working. Clicking it should draw a green rectangle on the canvas. In your code, use the hexadecimal value for green rather than the CSS keyword.</li>
+			<li>(20%) Add a new button titled "Fill Blue" to the page. Clicking it should draw a blue rectangle on the canvas.</li>
+			<li>(20%) Add a new button titled "Triangle" to the page. Clicking it should fill a magenta triangle with a 10-pixel thick green stroke on the canvas.</li>
+			<li>(20%) Add a new button titled "Circle" to the page. Clicking it should fill a purple circle with a 5-pixel thick white stroke on the canvas.</li>
+			<li>(10%) Because portions of the triangle and circle shapes may still be visible when you click other buttons, add code to effectively "clear" the image by re-drawing the 500x300-pixel yellow background. Add this to any function where its necessary.</li>
+			<li>Optional Challenge (+30% bonus if all completed. No partial bonus. ): At this point you have 3 buttons calling three different functions that all do basically the same thing. 
+			The is wasteful and violates the <abbr>D.R.Y.</abbr> principle of Software engineering ("<b>D</b>on't <b>R</b>epeat <b>Y</b>ourself"). 
+			Generalizing your code so that you have 1 function instead of 3 (i.e. <em>Procedural Abstraction</em>) would probably be a good idea. 
+			Go ahead and replace <code>drawRed()</code>, <code>drawGreen()</code>, and <code>drawBlue()</code> with a function named <code>drawBox()</code>. 
+			All three buttons should call the same <code>drawBox()</code> function, and draw the appropriate color box based on the button that was clicked. (This is trickier than you might think, and there are at least 2 ways to do it)</li>
+			
+		</ol>
+	</section>
+</body>
+</html>
