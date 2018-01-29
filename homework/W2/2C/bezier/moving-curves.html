@@ -1,0 +1,115 @@
+<html>
+<head>
+	<!--
+		A canvas example from:
+		https://developer.apple.com/library/safari/documentation/AudioVideo/Conceptual/HTML-canvas-guide/DrawingLinesandShapes/DrawingLinesandShapes.html
+		Their coding style is different from what we'll be using in class - use our style, not theirs.
+	-->
+    <title>Moving Curves</title>
+    <style>
+		canvas{
+			background: #ffffff;
+			cursor: pointer;
+			margin-left: 10px;
+			margin-top: 10px;
+			box-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+		}
+ 	</style>
+    <script type="text/javascript">
+        var canvas, ctx;
+ 
+        let gCtrls, gSpeed, gVectors, gAnimBounds;
+        
+        function init() {
+            canvas = document.querySelector("canvas");
+            ctx = canvas.getContext("2d");
+            
+            // Canvas bounds.
+            gAnimBounds = {
+                height: { min: 0, max: canvas.height },
+                width: { min: 0, max: canvas.width }
+            };
+            
+            // Initial speed.
+            gSpeed = 5;
+            
+            // Initial control point positions.
+            gCtrls = {
+                a: {x: 0, y: 0},
+                b: {x: 200, y: 300}                
+            };
+            
+            // Initial vector positions.
+            gVectors = {
+                a: {x: -1, y: 1 },
+                b: {x: 1, y: -1 }
+            };
+            
+            // Initial call to function for the first time.
+            drawCurves();
+        }
+        
+        function updatePositions(point, vector)
+        {
+            if(point !== undefined && vector !== undefined) {
+                point.x += vector.x * gSpeed;
+                point.y += vector.y * gSpeed;
+                wrapVectors(point, vector);
+            }            
+        }
+        
+        function wrapVectors(point, vector) 
+        {
+            if(point !== undefined && vector !== undefined) {
+                if(point.x < gAnimBounds.width.min || point.x > gAnimBounds.width.max) {
+                    vector.x *= -1;
+                }
+                if(point.y < gAnimBounds.height.min || point.y > gAnimBounds.height.max) {
+                    vector.y *= -1;
+                }
+            }
+        }
+        
+        // Updates and wraps position values.
+        function updateValues() 
+        {
+            // Calculate new point values.
+            updatePositions(gCtrls.a, gVectors.a);
+            updatePositions(gCtrls.b, gVectors.b);
+        }
+        
+        function getRandomInt(min = 0, max = 1) 
+        {
+            let value = Math.floor((Math.random() * max)) + Math.floor(min);
+        }
+
+        function drawCurves() {
+            ctx.clearRect(0, 0, 400, 600);
+            
+            ctx.lineWidth="3";
+            ctx.strokeStyle = "black";
+            updateValues();
+            var ctrlX = gCtrls.a.x; // 5;
+            var ctrlY = gCtrls.a.y;
+            var ctrlXa = gCtrls.b.x;
+            var ctrlYa = gCtrls.b.y;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.quadraticCurveTo(ctrlX, ctrlY, canvas.width, canvas.height);
+            ctx.stroke();
+
+            ctx.strokeStyle = "red";
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.bezierCurveTo(ctrlX, ctrlY, ctrlXa, ctrlYa, canvas.width, canvas.height);
+            ctx.stroke();
+            requestAnimationFrame(drawCurves);
+        }
+
+    </script>
+</head>
+<body onload="init()" style="background-color:#e0e0e0">
+    <canvas height="600" width="400">
+    </canvas>
+</body>
+</html>
