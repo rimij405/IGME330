@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8" />
-	<title>Canvas Paint App</title>
+	<title>IMGE 330: Canvas Paint App</title>
 	 <style>
       body {
          background: #eeeeee;
@@ -41,42 +41,98 @@
 	var canvas,ctx,dragging=false,lineWidth,strokeStyle;
 	
 	// CONSTANTS
-	
+	const DEFAULT_LINE_WIDTH = 3;
+    const DEFAULT_STROKE_STYLE = "red";
 	
 	// FUNCTIONS
 	function init(){
 		// initialize some globals
 		canvas = document.querySelector('#mainCanvas');
 		ctx = canvas.getContext('2d');
-		
-		
-		
+		lineWidth = DEFAULT_LINE_WIDTH;
+        strokeStyle = DEFAULT_STROKE_STYLE;
+        
+        // set initial properties of the context.
+        ctx.lineWidth = lineWidth;
+        ctx.strokeStyle = strokeStyle;
+        ctx.lineCap = "round"; // "butt", "round", "square" (default: "butt")
+        ctx.lineJoin = "round"; // "round". "bevel", "miter" (default: "miter")
+        
+        // draw the grid.
+        drawGrid(ctx, 'lightgray', 10, 10);				
+        
+        // setup event listeners.
+        canvas.onmousedown = doMousedown;
+        canvas.onmousemove = doMousemove;
+        canvas.onmouseup = doMouseup;
+        canvas.onmouseout = doMouseout;
+        
+        // set up the GUI.
+        document.querySelector('#lineWidthChooser').onchange = doLineWidthChange;
+        document.querySelector('#strokeStyleChooser').onchange = doStrokeStyleChange;
+        document.querySelector('#clearButton').onclick = doClear;
 	}
 	
 	
 	// EVENT CALLBACK FUNCTIONS
 	function doMousedown(e){
-		console.log(e.type);
+        dragging = true;
+        
+        // get location of mouse.
+        let mouse = getMouse(e);
+        
+        // PENCIL TOOL
+        ctx.beginPath();
+        
+        // move pen to x, y of mouse
+        ctx.moveTo(mouse.x, mouse.y);
 	}
  
  	function doMousemove(e) {
- 		
+ 		// return when mouse not dragging.
+        if(!dragging) { return; }
+        
+        // get location of mouse.
+        let mouse = getMouse(e);
+        
+        // PENCIL TOOL
+        // set ctx.strokeStyle and ctx.lineWidth to correct global values.
+        ctx.strokeStyle = strokeStyle;
+        ctx.lineWidth = lineWidth;
+        
+        // draw a line to x, y of mouse.
+        ctx.lineTo(mouse.x, mouse.y);
+        
+        // stroke the line.
+        ctx.stroke();
 	}
 	
 	function doMouseup(e) {
-		console.log(e.type);
+		if(!dragging) { return; }
+        dragging = false;
+        ctx.closePath();
 	}
 	
 	// if the user drags out of the canvas
 	function doMouseout(e) {
-		console.log(e.type);
+		if(!dragging) { return; }
+        dragging = false;
+        ctx.closePath();
 	}
 	
 	function doClear(){
 		ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 		drawGrid(ctx,'lightgray', 10, 10);
 	}
+        
+    function doLineWidthChange(e) {
+        lineWidth = e.target.value;
+    }
 	
+    function doStrokeStyleChange(e) {
+        strokeStyle = e.target.value;
+    }
+        
 	// UTILITY FUNCTIONS
 	/*
 	These utility functions do not depend on any global variables being in existence, 
@@ -118,12 +174,13 @@
 			ctx.stroke();
 		}
 		
-		/*
-			Need horizontal lines!
-			You write it!
-		*/
-		
-		
+        for (let y = cellHeight + 0.5; y < ctx.canvas.height; y += cellHeight) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(ctx.canvas.width, y);
+            ctx.stroke();            
+        }
+        		
 		// restore the drawing state
 		ctx.restore();
 	}
@@ -142,7 +199,18 @@
 				<option value="toolPencil">Pencil</option>
     		</select>
     	</label>
-    	
+        
+    	<label>Stroke Color: 
+			<select id="strokeStyleChooser">
+				<option value="red" selected>red</option>
+				<option value="green">green</option>
+				<option value="blue">blue</option>
+        		<option value="black">black</option>
+        		<option value="white">white</option>
+        		<option value="gray">gray</option>
+    		</select>
+    	</label>
+        
     	<label>Line Width: 
 			<select id="lineWidthChooser">
 				<option value="1">1</option>
@@ -157,8 +225,7 @@
         		<option value="10">10</option>
     		</select>
     	</label>
-    	
-    	
+    	    	
     	<span><input id="clearButton" type="button" value="Clear"/></span>
     </div>
 
