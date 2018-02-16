@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>Web Audio Visualizer</title>
+	<style>
+        body {
+            background: #eeeeee;
+            font-family: tahoma, verdana, sans-serif;
+            font-size: 13.333px;
+            vertical-align: middle;
+            line-height: 2;
+        }
+
+        canvas {
+            margin-left:10px;
+            margin-top:10px;
+            box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
+            background: black;
+        }
+
+        #controls{
+            margin-left:10px;
+            margin-top:10px;
+        }
+            
+        
+	</style>
+	<script>
+	// An IIFE ("Iffy") - see the notes in mycourses
+	(function(){
+		"use strict";
+		
+		var NUM_SAMPLES = 256;
+		var SOUND_1 = 'media/New Adventure Theme.mp3';
+		var SOUND_2 = 'media/Peanuts Theme.mp3';
+		var SOUND_3 = 'media/The Picard Song.mp3';
+		var audioElement;
+		var analyserNode;
+		var canvas,ctx;
+        let maxRadius = 200;
+        let invert = false, tintRed = false, noise = false, lines = false;
+        let filterAmount = 0;
+		
+		function init(){
+			// set up canvas stuff
+			canvas = document.querySelector('canvas');
+			ctx = canvas.getContext("2d");
+			
+			// get reference to <audio> element on page
+			audioElement = document.querySelector('audio');
+			
+			// call our helper function and get an analyser node
+			analyserNode = createWebAudioContextWithAnalyserNode(audioElement);
+			
+			// get sound track <select> and Full Screen button working
+			setupUI();
+			
+			// load and play default sound into audio element
+			playStream(audioElement,SOUND_1);
+			
+			// start animation loop
+			update();
+		}
+		
+		
+		function createWebAudioContextWithAnalyserNode(audioElement) {
+			var audioCtx, analyserNode, sourceNode;
+			// create new AudioContext
+			// The || is because WebAudio has not been standardized across browsers yet
+			// http://webaudio.github.io/web-audio-api/#the-audiocontext-interface
+			audioCtx = new (window.AudioContext || window.webkitAudioContext);
+			
+			// create an analyser node
+			analyserNode = audioCtx.createAnalyser();
+			
+			/*
+			We will request NUM_SAMPLES number of samples or "bins" spaced equally 
+			across the sound spectrum.
+			
+			If NUM_SAMPLES (fftSize) is 256, then the first bin is 0 Hz, the second is 172 Hz, 
+			the third is 344Hz. Each bin contains a number between 0-255 representing 
+			the amplitude of that frequency.
+			*/ 
+			
+			// fft stands for Fast Fourier Transform
+			analyserNode.fftSize = NUM_SAMPLES;
+			
+			// this is where we hook up the <audio> element to the analyserNode
+			sourceNode = audioCtx.createMediaElementSource(audioElement); 
+			sourceNode.connect(analyserNode);
+			
+			// here we connect to the destination i.e. speakers
+			analyserNode.connect(audioCtx.destination);
+			return analyserNode;
+		}
+		
+		function setupUI(){
+			document.querySelector("#trackSelect").onchange = function(e){
+				playStream(audioElement,e.target.value);
+			};
+			
+			document.querySelector("#fsButton").onclick = function(){
+				requestFullscreen(canvas);
+			};
+            
+            document.querySelector("#slider").onchange = function(e) {
+                document.querySelector("#sliderResults").innerHTML = e.target.value;
+                maxRadius = e.target.value;
+            };
+            
+            document.querySelector("#sld_Filter").onchange = function(e) {
+                document.querySelector("#sld_FilterResults").innerHTML = e.target.value;
+                filterAmount = e.target.value;
+            };
+            
+            document.querySelector("#chk_TintRed").onchange = function(e) {
+                tintRed = e.target.checked;
+            }
+            
+            document.querySelector("#chk_Invert").onchange = function(e) {
+                invert = e.target.checked;
+            }
+            
+            document.querySelector("#chk_Lines").onchange = function(e) {
+                lines = e.target.checked;
+            }
+            
+            document.querySelector("#chk_Noise").onchange = function(e) {
+                noise = e.target.checked;
+            }
+		}
+		
+		function playStream(audioElement,path){
+			audioElement.src = path;
+			audioElement.play();
+			audioElement.volume = 0.2;
+			document.querySelector('#status').innerHTML = "Now playing: " + path;
+		}
+		
+		function update() { 
+			// this schedules a call to the update() method in 1/60 seconds
+			requestAnimationFrame(update);
+			
+			/*
+				Nyquist Theorem
+				http://whatis.techtarget.com/definition/Nyquist-Theorem
+				The array of data we get back is 1/2 the size of the sample rate 
+			*/
+			
+			// create a new array of 8-bit integers (0-255)
+			var data = new Uint8Array(NUM_SAMPLES/2); 
+			
+			// populate the array with the frequency data
+			// notice these arrays can be passed "by reference" 
+			analyserNode.getByteFrequencyData(data);
+		
+			// OR
+			//analyserNode.getByteTimeDomainData(data); // waveform data
+			
+			// DRAW!
+			ctx.clearRect(0,0,800,600);  
+			var barWidth = 4;
+			var barSpacing = 1;
+			var barHeight = 100;
+			var topSpacing = 50;
+			
+			// loop through the data and draw!
+			for(var i=0; i<data.length; i++) { 
+				ctx.fillStyle = 'rgba(0,255,0,0.6)'; 
+				
+                // Drawing spheres instead of rectangles.
+                ctx.moveTo(i * (barWidth + barSpacing), 0);
+                ctx.beginPath();
+                ctx.arc(i * (barWidth + barSpacing), topSpacing + 256 - data[i], 5, 0, 2 * Math.PI, false);
+                ctx.fill();
+                ctx.closePath();
+                
+				// the higher the amplitude of the sample (bin) the taller the bar
+				// remember we have to draw our bars left-to-right and top-down
+				// ctx.fillRect(i * (barWidth + barSpacing),topSpacing + 256-data[i],barWidth,barHeight); 
+				
+                // draw inverted bars
+                // ctx.fillRect(640 - i * (barWidth + barSpacing), topSpacing + 256 - data[i] - 20, barWidth, barHeight);
+                
+                // reddish circles
+                let percent = data[i] / 255;
+                let circleRadius = percent * maxRadius;
+                ctx.beginPath();
+                ctx.fillStyle = makeColor(255, 111, 111, .34 - percent/3.0);
+                ctx.arc(canvas.width / 2, canvas.height / 2, circleRadius, 0, 2 * Math.PI, false);
+                ctx.fill();
+                ctx.closePath(); 
+                
+                // blue-ish circles, bigger, more transparent.
+                ctx.beginPath();
+                ctx.fillStyle = makeColor(0, 0, 255, .10 - percent/10.0);
+                ctx.arc(canvas.width / 2, canvas.height / 2, circleRadius * 1.5, 0, 2 * Math.PI, false);
+                ctx.fill();
+                ctx.closePath();
+                
+                // yellow-ish circles, smaller
+                ctx.save();
+                ctx.beginPath();
+                ctx.fillStyle = makeColor(200, 200, 0, .5 - percent/5.0);
+                ctx.arc(canvas.width / 2, canvas.height / 2, circleRadius * 0.5, 0, 2 * Math.PI, false);
+                ctx.fill();
+                ctx.closePath();
+                ctx.restore();       
+                
+			}
+			 
+            // Manipulate the pixles of the canvas.
+            manipulatePixels();            
+		} 
+		
+		// HELPER
+        function manipulatePixels() {
+            let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            let data = imageData.data;
+            let length = data.length;
+            let width = imageData.width;
+            
+            for(let i = 0; i < length; i += 4) {
+                if(tintRed) {
+                    data[i] = data[i] + 100;
+                }
+                
+                if(invert) {
+                    let red = data[i], green = data[i + 1], blue = data[i + 2];
+                    data[i] = 255 - red;
+                    data[i + 1] = 255 - green;
+                    data[i + 2] = 255 - blue;                    
+                }
+                
+                if(noise && Math.random() < 0.10) {
+                    data[i] = data[i + 1] = data[i + 2] = 128;
+                }
+                
+                if(lines) {
+                    let row = Math.floor(i / 4 / width);
+                    if(row % 50 == 0) {
+                        data[i] = data[i + 1] = data[i + 2] = data[i + 3] = 255;
+                        data[i + (width * 4)] = data[i + (width * 4) + 1] = data[i + (width * 4) + 2] = data[i + (width * 4) + 3] = 255;                        
+                    }
+                }
+                
+                if(filterAmount > 0) {
+                    if(data[i] < filterAmount) {
+                        data[i] = 0;
+                    }
+                    
+                    if(data[i + 2] < filterAmount) {
+                        data[i + 2] = 255;
+                    }
+                }
+            }
+            
+            ctx.putImageData(imageData, 0, 0);            
+        }
+                
+		function makeColor(red, green, blue, alpha){
+   			var color='rgba('+red+','+green+','+blue+', '+alpha+')';
+   			return color;
+		}
+		
+		 // FULL SCREEN MODE
+		function requestFullscreen(element) {
+			if (element.requestFullscreen) {
+			  element.requestFullscreen();
+			} else if (element.mozRequestFullscreen) {
+			  element.mozRequestFullscreen();
+			} else if (element.mozRequestFullScreen) { // camel-cased 'S' was changed to 's' in spec
+			  element.mozRequestFullScreen();
+			} else if (element.webkitRequestFullscreen) {
+			  element.webkitRequestFullscreen();
+			}
+			// .. and do nothing if the method is not supported
+		};
+		        
+		window.addEventListener("load",init);
+	}());
+		
+	</script>
+</head>
+<body>
+	<canvas id="canvas" width="640" height="400"></canvas>
+	<div id="controls">
+		<audio controls loop></audio>
+        <div>
+            <label>Track: 
+                <select id="trackSelect" >
+                    <option value="media/New Adventure Theme.mp3">New Adventure Theme</option>
+                    <option value="media/Peanuts Theme.mp3">Peanuts Theme</option>
+                    <option value="media/The Picard Song.mp3">The Picard Song</option>
+                </select>
+            </label>
+        </div>
+        <div>
+            <label for='slider'>Max Radius: </label>
+            <input id='slider' type='range' min='1' max='400' step='5' value='200.0'/>
+            <span id='sliderResults'>200</span>
+        </div>
+        <div>
+            <input type='checkbox' id='chk_TintRed' name='tintRed'>
+            <label for='chk_TintRed'> Tint Red |</label>
+            <input type='checkbox' id='chk_Invert' name='invert'>
+            <label for='chk_Invert'> Invert |</label>
+            <input type='checkbox' id='chk_Noise' name='noise'>
+            <label for='chk_Noise'> Noise |</label>
+            <input type='checkbox' id='chk_Lines' name='lines'>
+            <label for='chk_Lines'> Lines</label>
+        </div>
+        <div>
+            <label for='sld_Filter'>Filter: </label>
+            <input type='range' id='sld_Filter' min='0' max='255' step='1' value='0' />
+            <span id='sld_FilterResults'>0</span>
+            <p>When non-zero, this filter affects the individiual color values of pixels. When the red value is less than the slider amount, it will be set to zero. Whereas, when the green value is less than the slider amount, it will be set to 255.</p>
+        </div>
+        <div>
+            <button id="fsButton">Go Full Screen</button><br>
+        </div>
+		<p id="status">???</p>
+	</div>
+</body>
+</html>

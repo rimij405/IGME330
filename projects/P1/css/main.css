@@ -1,0 +1,442 @@
+@import url('https://fonts.googleapis.com/css?family=Alegreya|Lato');
+
+/*
+    Main.css
+    Ian Effendi
+    ---
+    Contains the CSS for project 1 for IGME 330.
+*/
+
+/*
+    Color Palette [https://coolors.co/bc0300-e81919-d6a242-fff9e0-2d3047]
+    #BC0300 [Boston University Red] - Base
+    #E81919 [Lust] - Accent
+    #D6A242 [Satin Sheen Gold] - Emphasis
+    #FFF9E0 [Cornsilk] - Highlight
+    #2D3047 [Gunmetal] - Shade
+*/
+
+/*
+    Borders
+*/
+
+.border,
+.border-solid,
+.border-dashed, 
+.border-round,
+.border-black,
+.border-white,
+.border-base,
+.border-accent,
+.border-highlight,
+.border-emphasis,
+.border-shade,
+.black-border,
+.white-border,
+.darkred-border,
+.red-border,
+.gold-border,
+.sheen-border,
+.cornmilk-border,
+.gunmetal-border,
+*[data-border] {
+    padding: 15px;
+    border: 3px solid black;
+}
+
+.border-dashed {
+    border: 3px dashed black;
+}
+
+.border-round {
+    border-radius: 10px;
+}
+
+.box-shadow,
+*[data-shadow]{
+    box-shadow: 5px 5px 10px 1px #c1bbbb;
+}
+
+/*
+    Border colors.
+*/
+
+.black-border,
+.border-black,
+*[data-border="black"]{
+    border-color: #212121;
+}
+
+.white-border,
+.border-white,
+*[data-border="white"]{
+    border-color: #fcfcfc;
+}
+
+.darkred-border,
+.border-base,
+*[data-border="base"]{
+    border-color: #BC0300;
+}
+
+.red-border,
+.border-accent,
+*[data-border="accent"]{
+    border-color: #E81919;
+}
+
+.sheen-border,
+.border-emphasis,
+*[data-border="emphasis"]{
+    border-color: #D6A242;
+}
+
+.cornsilk-border,
+.border-highlight,
+*[data-border="highlight"]{
+    border-color: #FFF9E0;
+}
+
+.gunmetal-border,
+.border-shade,
+*[data-border="shade"]{
+    border-color: #2D3047;
+}
+
+/*
+    Color classes that can be applied to change element colors.
+*/
+
+.black-text,
+.text-black,
+*[data-color="black"]{
+    color: #212121;
+}
+
+.white-text,
+.text-white,
+*[data-color="white"]{
+    color: #fcfcfc;
+}
+
+.darkred-text,
+.text-base,
+*[data-color="base"]{
+    color: #BC0300;
+}
+
+.red-text,
+.text-accent,
+*[data-color="accent"]{
+    color: #E81919;
+}
+
+.sheen-text,
+.text-emphasis,
+*[data-color="emphasis"]{
+    color: #D6A242;
+}
+
+.cornsilk-text,
+.text-highlight,
+*[data-color="highlight"]{
+    color: #FFF9E0;
+}
+
+.gunmetal-text,
+.text-shade,
+*[data-color="shade"]{
+    color: #2D3047;
+}
+
+/*
+    Background colors.
+*/
+
+.black,
+.background-black,
+*[data-background="black"]{
+    background: #212121;
+}
+
+.white,
+.background-white,
+*[data-background="white"]{
+    background: #f0f0f0;
+}
+
+.darkred,
+.background-base,
+*[data-background="base"]{
+    background: #BC0300;
+}
+
+.red,
+.background-accent,
+*[data-background="accent"]{
+    background: #E81919;
+}
+
+.sheen,
+.background-emphasis,
+*[data-background="emphasis"]{
+    background: #D6A242;
+}
+
+.cornsilk,
+.background-highlight,
+*[data-background="highlight"]{
+    background: #FFF9E0;
+}
+
+.gunmetal,
+.background-shade,
+*[data-background="shade"]{
+    background: #2D3047;
+}
+
+/*
+    Font Usage:
+    font-family: 'Alegreya', serif;
+    font-family: 'Lato', sans-serif;
+*/
+
+/*
+    Normalize the CSS spacing for some elements.
+*/
+
+p, h1, h2, h3, h4, h5, h6,
+li, ol, ul, a {
+    margin: 0;
+    padding: 0; 
+    
+    text-align: left;
+    line-height: 1.33; 
+    font-family: 'Lato', sans-serif;
+}
+
+html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    
+    position: absolute;
+    top: 0;
+        
+    font-size: 18px;
+    min-width: 800px;
+}
+
+/*
+    Custom CSS begins here:
+*/
+
+/* COPY */
+p { font-size: 1em; }
+h1 { font-size: 2.25em; }
+h2 { font-size: 2em; }
+h3 { font-size: 1.75em; }
+h4 { font-size: 1.5em; }
+h5 { font-size: 1.25em; }
+h6 { font-size: 1em; }
+.small { font-size: 0.75em; }
+
+article, .copy, label {
+    line-height: 1.33;
+    font-size: 1em;
+    font-family: 'Lato', sans-serif;
+}
+
+.center {
+    text-align: center;
+    margin: 0px auto;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin-bottom: 5px;
+    
+    line-height: 1.5;
+    font-weight: bold;
+    font-family: 'Alegreya', serif;
+}
+
+p + p {
+    margin-top: 15px;
+}
+
+.underline {
+    text-decoration-line: underline;
+}
+
+/* CONTAINER */
+section {
+    display: block;
+    margin: 0px auto;
+    padding: 0px;
+    width: 100%;
+}
+
+.container {
+    display: block;
+    margin: 0px auto;    
+    padding: 5px;
+    width: 80%;
+}
+
+.panel {
+    margin: 0px auto;
+    min-width: 640px;
+    max-width: 720px;
+}
+
+/* SPACER */
+.spacer {
+    display: block;
+    margin: 5px auto;
+    padding: 0px;
+    width: 100%;
+    height: 1px;
+}
+
+.spacer[data-size="5"] {
+    height: 5px;
+}
+
+.spacer[data-size="10"] {
+    height: 10px;
+}
+
+/* NAVIGATION */
+#top {
+    margin-top: 150px;
+}
+
+header {
+    display: block;
+    position: fixed;
+    width: 100%;
+}
+
+nav {
+    display: block;
+    position: relative;
+    
+    margin: 0px auto;
+    margin-top: 5px;
+    padding: 5px;
+    width: 100%;
+    height: 50px;
+    
+    border-top: 5px solid #2D3047;
+    border-bottom: 5px solid #2D3047;
+    background: #BC0300;
+}
+
+.brand-img {
+    display: block;
+    position: relative;
+    float: left;      
+    
+    padding-left: 5%;
+}
+
+.brand {
+    display: block;
+    width: 46px;
+    height: 46px;
+    
+    border: 2px solid #2D3047;
+    border-radius: 50px;
+}
+
+.brand:hover {
+    border-color: #FFF9E0;
+}
+
+.nav-list {
+    display: block;
+    position: relative;
+    float: right;      
+    top: 20%;
+    vertical-align: middle;
+    padding-right: 5%;    
+    list-style: none;
+    height: 100%;
+}
+
+.nav-link {
+    display: inline-block;
+    vertical-align: middle;
+    padding-left: 5px;
+    font-size: 0.5em;
+}
+
+.button {
+    display: block;
+    padding: 5px;
+    width: 75px;    
+    
+    text-align: center;    
+    font-size: 1.2em;
+    
+    border: 2px solid #D6A242;
+    border-radius: 10px;    
+    text-decoration: none;
+    
+    color: #FFF9E0;
+    border-color: #2D3047;
+    background: #D6A242;
+}
+
+.button:hover {
+    color: white;
+    border-style: solid;
+    border-color: #FFF9E0;
+    background: #E81919;
+}
+
+.button:active {
+    color: white;
+    border-style: solid;
+    border-color: #2D3047;
+    background: #2D3047;    
+}
+
+footer {
+    display: block;
+    position: fixed;  
+    margin-top: 15px;
+    bottom: 0px;    
+    width: 100%;    
+    font-size: 10px;
+}
+
+audio {
+    display: block;
+    margin: 0px auto;
+    width: 100%;
+}
+
+#controls div {
+    margin: 0px auto;
+    text-align: center;
+}
+
+#fsButton {
+    padding: 5px;
+    margin: 5px;
+    font-family: 'Lato', sans-serif;
+}
+
+#canvas {
+    margin: 0px auto;
+    background: #212121;
+}
