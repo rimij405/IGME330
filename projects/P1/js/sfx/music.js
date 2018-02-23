@@ -1,11 +1,19 @@
 /*
-    audio.js - Ian Effendi
-    Creates an audio context for use with the main application.
+    music.js - Ian Effendi
+    Classes associated with music files and their collections.
+    
+    /////
+    
+    // References used:
+    // Joe Sullivan's Beat Detection Using Javascript and the Web Audio API: [http://joesul.li/van/beat-detection-using-web-audio/]
+
+    /////
+    
+    // Class definitions are in this order:
+    // Music - Individual songs.
+    // MusicLibrary - Collection of music files.
 */
 "use strict";
-
-// References used:
-// Joe Sullivan's Beat Detection Using Javascript and the Web Audio API: [http://joesul.li/van/beat-detection-using-web-audio/]
 
 // represents a musical piece.
 class Music {    
@@ -18,7 +26,7 @@ class Music {
             lower: low,
             upper: high
         };
-        this.bpm = undefined; // Beats per minute of the track.
+        this.bpm = 0; // Beats per minute of the track.
         this.duration = 0; // Duration of the track.
         this.beats = {
             timeBetween: 0,
@@ -65,6 +73,16 @@ class Music {
     
     // methods.
     
+    toString() {
+        let str = this.title + " Info:";
+        str += `\nFile located at '${this.path}'`;
+        str += `\n${this.tempo} BPM | Tempo Bounds: [${this.lowerBound} : ${this.upperBound}]`
+        str += `\nDuration of ${this.length} total seconds`;
+        str += `\nBeats timed at intervals of ${this.beats.timeBetween} seconds.`;
+        str += `\nFirst beat offset by ${this.beats.offset} seconds`;
+        return str;
+    }
+    
     // calculates the beats per minute in a song!
     calculateTempo() {
         
@@ -79,16 +97,21 @@ class Music {
         
         // When the request is loaded, it will run this callback function.
         request.onload = function() {
-            
+                        
             // Since we need to cover for cross-platform, we first create a reference to the class.
             let OfflineContextObject = (window.OfflineAudioContext || window.webkitOfflineAudioContext);
-            
+                        
             // Now, we can call the constructor with the associated parameters, on the pointer we just created.
             let offlineContext = new OfflineContextObject(2, 44100 * 56, 44100);
+                    
+            console.log("'" + this.title + "': " + offlineContext);
+            console.dir(offlineContext);
             
             // Using the provided path, we an put the file into an audio buffer.
             offlineContext.decodeAudioData(request.response, function(arrayBuffer){
                 // DecodeAudioData uses the first parameter as the ArrayBuffer and the second parameter as the success callback with the audio buffer as the argument.
+                
+                console.log("'" + this.title + "': " + offlineContext + " - decodeAudioData() method.");
                 
                 // We can query this buffer for metadata, like the total song length.
                 this.duration = arrayBuffer.duration;
@@ -110,11 +133,16 @@ class Music {
                 // It's all the data-streaming without any of the enjoyment! (but that's good since we're just using this to do math!)
                 source.start(0);
                 offlineContext.startRendering();
+                
+                console.log("'" + this.title + "': " + offlineContext + " - startRendering() method.");
+                
             }.bind(file));
             
             // Now, on the completion of the audio decode process, we have our next callback function:
             offlineContext.oncomplete = function(source) {
-                
+                                
+                console.log("'" + this.title + "': " + offlineContext + " - oncomplete callback method.");
+                                
                 // Retrieves the filtered results from the decode audio data method.
                 let render = source.renderedBuffer;
                 let arrayBuffer = [];
@@ -122,6 +150,7 @@ class Music {
                 // This is where we take our small selection of 30 seconds.
                 let clipDuration = 44100 * 30;
                 let clipStart = 44100 * 10;
+                clipStart = 0;
                 
                 // Grabs our samples and pushes them into the buffer.
                 for(let i = 0; i < clipDuration; i++) {
@@ -155,13 +184,13 @@ class Music {
                 });
                 
                 // Splice array by peaks larger than the average.
-                peaks = peaks.splice(0, peaks.length / 2);
+                peaks = peaks.splice(0, peaks.length * 0.5);
                 
                 // Sort peaks by position.
                 peaks.sort(function(a, b) {
                     return a.position - b.position; 
                 });
-                
+                                
                 // Group all of the peaks. (We group possible tempos, tally them up, and choose the one that usually is the highest occurring).
                 peaks.forEach(function(peak, index){
                     for(let n = 1; (index + n) < peaks.length && n < 10; n++) {
@@ -170,32 +199,32 @@ class Music {
                             count: 1,
                             peaks: [peak]
                         }
-                        
+                                                
                         while (batch.bpm < this.lowerBound) {
                             batch.bpm *= 2;
                         }
                         
                         while (batch.bpm > this.upperBound) {
-                            batch.bpm *= 2;
+                            batch.bpm /= 2;
                         }
                         
                         batch.bpm = Math.round(batch.bpm);
                         
-                        let grouped = false;
-                        batches.forEach(function(g){
-                            if(g.bpm == batch.bpm) {
-                                g.count++;
-                                g.peaks.push(batch.peaks[0]);
-                                grouped = true;
+                        let batched = false;
+                        batches.forEach(function(item){
+                            if(item.bpm == batch.bpm) {
+                                item.count++;
+                                item.peaks.push(batch.peaks[0]);
+                                batched = true;
                                 return;
                             }
                         });
                         
-                        if(!grouped) {
+                        if(!batched) {
                             batches.push(batch);
                         }
                     }                    
-                }.bind(file));
+                }, file);
                 
                 // Best candidate bpm batch.
                 let candidate = batches.sort(function(a, b){
@@ -205,6 +234,9 @@ class Music {
                 // This candidate's bpm is the estimate.
                 this.bpm = candidate[0].bpm;
                                 
+                console.log("'" + this.title + "' has " + candidate.length + " candidates.");
+                console.dir(candidate);
+                
                 // Calculate some other metadata.
                 // Calculate the amount of time between each beat in the song.
                 this.beats.timeBetween = (this.duration) / ((this.duration / 60.0) * candidate[0].bpm);
@@ -223,129 +255,63 @@ class Music {
                 
                 // We can now find the beat by getting the elapsed time of the song.
                 this.beats.offset = offset - startPosition;
+                                
+                console.log("Tempo calculated for " + file.toString());
                 
             }.bind(file);
             
-        }.bind(file);        
+        }.bind(file);     
+        
+        // debugger;
+        
+        request.send();
     }    
 }
 
-// creates an analyzer node for use with an audio context.
-class AnalyzerNode {
+// represents a collection of songs.
+class MusicLibrary {
     
-    constructor(audioContext, samples) {
-        this.node = audioContext.createAnalyser();
-        this.node.fftSize = samples;
-        this.data = undefined;
-        this.waveform = false;
-    }
-
-    setFrequencyMode(value) {
-        this.waveform = !value;
-    }
-    
-    setWaveformMode(value) {
-        this.waveform = value;
-    }
-    
-    connect(destination) {
-        this.node.connect(destination);
-    }
-    
-    update() {        
-        // Create array.
-        this.data = new Uint8Array(this.node.fftSize / 2);
+    // constructor will take the selector id for the track selection object.
+    constructor(selectorID, debug = false) {
         
-        // Populate array based on mode.
-        if(this.waveform) {
-            this.node.getByteTimeDomainData(this.data);
-        }
-        else 
-        {
-            this.node.getByteFrequencyData(this.data);
-        }
-    }
-    
-    getData() {
-        return this.data;
-    }
+        // Collection holding songs.
+        this.paths = [];
+        this.collection = [];
+        this.debug = debug;
         
-}
-
-class AudioElement {
-    
-    // Retrieves the audio element from the document.
-    constructor() {        
-        // class properties.
-        this.audioElement = undefined;
-        this.audioContext = undefined;
-        this.sourceNode = undefined;
-        this.audioNodes = undefined;
-                
-        // private, internal functions.
-        this.init = function() {
-            console.log("Initializing the audio element.");
-            this.audioElement = document.querySelector('audio');
-            
-            console.log("Creating the audio context.");
-            this.audioContext = new (window.AudioContext || window.webkitAudioContext);
-            
-            console.log("Creating and hooking the source node.");
-            this.sourceNode = this.audioContext.createMediaElementSource(this.audioElement);
-            
-            console.log("Creating collection for analyzer nodes.");
-            this.audioNodes = [];
-            this.audioNodes.push(this.sourceNode);
-            this.sourceNode.connect(this.audioContext.destination);
+        // loads songs
+        this.loadSongs = function (selector){       
+            let element = document.querySelector(selector);
+            for(let i = 0; i < element.options.length; i++) {
+                console.log("Loading song located at: " + element.options[i].value);
+                this.paths.push(element.options[i].value);
+                this.collection.push(
+                    new Music(element.options[i].value,
+                              element.options[i].dataset.lower, 
+                              element.options[i].dataset.upper)
+                );
+            }
         }
-        
-        // Calling the method.
-        this.init();
+                        
+        // load the songs.
+        this.loadSongs(selectorID);
     }
     
-    // properties.    
-    get source() {
-        return this.audioElement.src;
+    // property to return the collection reference.
+    get songs() {
+        return this.collection;
     }
     
-    set source(value) {
-        this.audioElement.src = value;
+    // return the library in the form of a string.
+    toString() {
+        let str = "This MusicLibrary currently contains:\n";
+        for(let i = 0; i < this.songs.length; i++){
+            str += "[" + (i + 1) + "]: '" + this.songs[i].title + "' at '" + this.songs[i].path + "'";
+            if(i < this.songs.length - 1) {
+                str += "\n";
+            }
+        } 
+        return str;
     }
     
-    get volume() {
-        return this.audioElement.volume;
-    }
-    
-    set volume(value) {
-        this.audioElement.volume = value;
-    }
-    
-    // methods.
-    play() {
-        this.audioElement.play();
-    }
-    
-    addAnalyzerNode(samples = 256, waveform = false) {
-        console.log("Adding a new analyzer node.");
-        let node = new AnalyzerNode(this.audioContext, samples);
-        node.setWaveformMode(waveform);
-        this.audioNodes.push(node);
-                     
-        console.log("Updating node connection destinations.");
-        for(let i = 0; i < this.audioNodes.length - 1; i++) {
-            this.audioNodes[i].connect(this.audioNodes[i + 1].node);
-        }
-                
-        // Connect the most recently added node to the destination.
-        this.audioNodes[this.audioNodes.length - 1].connect(this.audioContext.destination);
-        console.dir(this.audioNodes);
-    }
-    
-    update() {
-        for(let i = 1; i < this.audioNodes.length; i++) 
-        {
-            console.dir(this.audioNodes[i]);
-            this.audioNodes[i].update();            
-        }
-    }
 }

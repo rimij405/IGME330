@@ -23,18 +23,34 @@
         <div>
             <label class="small">Track Selection: 
                 <select id="trackSelect" >
-                    <option value="media/byebyebye.mp3">Bye, Bye, Bye</option>
-                    <option value="media/New Adventure Theme.mp3">New Adventure Theme</option>
-                    <option value="media/Peanuts Theme.mp3">Peanuts Theme</option>
-                    <option value="media/The Picard Song.mp3">The Picard Song</option>
-                    <option value="media/downtheroad.mp3">Down the Road</option>
+                    <option value="media/byebyebye.mp3" data-lower="100" data-upper="200">Bye, Bye, Bye</option>
+                    <option value="media/New Adventure Theme.mp3" data-lower="100" data-upper="200">New Adventure Theme</option>
+                    <option value="media/Peanuts Theme.mp3" data-lower="100" data-upper="200">Peanuts Theme</option>
+                    <option value="media/The Picard Song.mp3" data-lower="100" data-upper="200">The Picard Song</option>
+                    <option value="media/downtheroad.mp3" data-lower="100" data-upper="200">Down the Road</option>
                 </select>
             </label>
         </div>
-        <script src="js/utilities.js"></script>
-        <script src="js/loader.js"></script>
-        <script src="js/main.js"></script>
-        <script src="js/audio.js"></script>
-        <script src="js/ui.js"></script>
+        
+        <!-- Import Utility scripts -->
+        <script src="js/util/utilities.js"></script>
+        
+        <!-- Import Sound media scripts -->
+        <script src="js/sfx/audio.js"></script>
+        <script src="js/sfx/music.js"></script>
+        <script src="js/sfx/player.js"></script>
+        
+        <!-- Import UI scripts -->
+        <script src="js/gui/ui.js"></script>
+        <script src="js/gui/ui-select.js"></script>
+        <script src="js/gui/ui-button.js"></script>
+        <script src="js/gui/ui-slider.js"></script>
+        <script src="js/gui/ui-checkbox.js"></script>
+        
+        <!-- Misc scripts -->
+        <script src="js/main-properties.js"></script>
+        <script src="js/main-factories.js"></script>
+        <script src="js/main-functions.js"></script>
+        <script src="js/util/loader.js"></script>
     </body>
 </html>
