@@ -10,7 +10,7 @@ var application = application || {};
 // Set up the onload callback function.
 window.onload = function() {
     console.log("Window loaded.");
-    application.main.init(true); // Use boolean to toggle debug mode.
+    application.main.init(false); // Use boolean to toggle debug mode.
     // application.main.playStream(application.main.SOUNDS[0]);
     // console.dir(application);
 }

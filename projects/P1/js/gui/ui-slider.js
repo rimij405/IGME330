@@ -18,7 +18,7 @@ class UISlider extends BaseUIElement {
     // Set the callback function AND rig it to on click.
     setCallback(func) {
         super.setCallback(func); // set the callback function to input parameter.
-        this.rig('onchange');
+        this.rig('oninput');
     }   
     
 } // end UISlider.

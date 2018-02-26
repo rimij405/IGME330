@@ -19,9 +19,9 @@
 class Music {    
     
     // creates a song by referencing its path.    
-    constructor(path, low = 100, high = 200) {       
-               
+    constructor(path, low = 100, high = 200, index = -1) {       
         this.path = path;  // The filepath for the song.
+        this.index = index;
         this.bounds = { // Represents the possible tempo range in the song.
             lower: low,
             upper: high
@@ -30,7 +30,8 @@ class Music {
         this.duration = 0; // Duration of the track.
         this.beats = {
             timeBetween: 0,
-            offset: 0
+            offset: 0,
+            loaded: false,
         }
     }
     
@@ -74,7 +75,7 @@ class Music {
     // methods.
     
     toString() {
-        let str = this.title + " Info:";
+        let str = `${this.title} [${this.index}] | Loaded: ${this.beats.loaded} |:`;
         str += `\nFile located at '${this.path}'`;
         str += `\n${this.tempo} BPM | Tempo Bounds: [${this.lowerBound} : ${this.upperBound}]`
         str += `\nDuration of ${this.length} total seconds`;
@@ -104,14 +105,14 @@ class Music {
             // Now, we can call the constructor with the associated parameters, on the pointer we just created.
             let offlineContext = new OfflineContextObject(2, 44100 * 56, 44100);
                     
-            console.log("'" + this.title + "': " + offlineContext);
-            console.dir(offlineContext);
+            // console.log("'" + this.title + "': " + offlineContext);
+            // console.dir(offlineContext);
             
             // Using the provided path, we an put the file into an audio buffer.
             offlineContext.decodeAudioData(request.response, function(arrayBuffer){
                 // DecodeAudioData uses the first parameter as the ArrayBuffer and the second parameter as the success callback with the audio buffer as the argument.
                 
-                console.log("'" + this.title + "': " + offlineContext + " - decodeAudioData() method.");
+                // console.log("'" + this.title + "': " + offlineContext + " - decodeAudioData() method.");
                 
                 // We can query this buffer for metadata, like the total song length.
                 this.duration = arrayBuffer.duration;
@@ -134,14 +135,14 @@ class Music {
                 source.start(0);
                 offlineContext.startRendering();
                 
-                console.log("'" + this.title + "': " + offlineContext + " - startRendering() method.");
+                // console.log("'" + this.title + "': " + offlineContext + " - startRendering() method.");
                 
             }.bind(file));
             
             // Now, on the completion of the audio decode process, we have our next callback function:
             offlineContext.oncomplete = function(source) {
                                 
-                console.log("'" + this.title + "': " + offlineContext + " - oncomplete callback method.");
+                // console.log("'" + this.title + "': " + offlineContext + " - oncomplete callback method.");
                                 
                 // Retrieves the filtered results from the decode audio data method.
                 let render = source.renderedBuffer;
@@ -230,12 +231,12 @@ class Music {
                 let candidate = batches.sort(function(a, b){
                     return b.count - a.count;
                 });
-                
+                                
                 // This candidate's bpm is the estimate.
                 this.bpm = candidate[0].bpm;
                                 
-                console.log("'" + this.title + "' has " + candidate.length + " candidates.");
-                console.dir(candidate);
+                // console.log("'" + this.title + "' has " + candidate.length + " candidates.");
+                // console.dir(candidate);
                 
                 // Calculate some other metadata.
                 // Calculate the amount of time between each beat in the song.
@@ -256,7 +257,9 @@ class Music {
                 // We can now find the beat by getting the elapsed time of the song.
                 this.beats.offset = offset - startPosition;
                                 
-                console.log("Tempo calculated for " + file.toString());
+                this.beats.loaded = true;
+                
+                // console.log("Tempo calculated for " + file.toString());
                 
             }.bind(file);
             
@@ -272,25 +275,52 @@ class Music {
 class MusicLibrary {
     
     // constructor will take the selector id for the track selection object.
-    constructor(selectorID, debug = false) {
+    constructor(selectorID, debug = false) {    
         
-        // Collection holding songs.
-        this.paths = [];
-        this.collection = [];
+        // debug flag.
         this.debug = debug;
+                
+        // keeping track of the library's songs.
+        this.collection = [];          
+        this.collection.currentSong = 0;
+        this.collection.loadedSongs = 0;
+        this.loadedIndices = {};
         
-        // loads songs
-        this.loadSongs = function (selector){       
+        // this.collection.totalSongs = length of collection.
+        
+        // loads songs for the library.
+        this.loadSongs = function (selector){  
+            
+            // set current song to the first index.
+            this.collection.currentSong = 0;
+            
+            // get the option selector on the DOM with all the songs.
             let element = document.querySelector(selector);
+            
+            // loop through the DOM element's options for each song.
             for(let i = 0; i < element.options.length; i++) {
-                console.log("Loading song located at: " + element.options[i].value);
-                this.paths.push(element.options[i].value);
-                this.collection.push(
-                    new Music(element.options[i].value,
-                              element.options[i].dataset.lower, 
-                              element.options[i].dataset.upper)
-                );
+                // add each song to the collection.
+                if(this.debug) { console.log("Loading song located at: " + element.options[i].value + "."); }
+                
+                // set index value of option.
+                element.options[i].dataset.index = i;
+                
+                // make song reference.
+                let song = new Music(element.options[i].value,
+                                     element.options[i].dataset.lower, 
+                                     element.options[i].dataset.upper, i);
+                
+                
+                // add the new element to the collection.                
+                this.collection.push(song);
+                
+                // load the tempo for the given song.
+                if(this.debug) { console.log("Starting tempo calculation for " + song.title + "."); }
+                if(song.tempo == null || song.tempo == 0) {
+                    song.calculateTempo();
+                }                
             }
+            
         }
                         
         // load the songs.
@@ -302,6 +332,54 @@ class MusicLibrary {
         return this.collection;
     }
     
+    get currentSong() {
+        return this.songs[this.songs.currentSong];
+    }
+        
+    // check if the tempos have been calculated.
+    get temposCalculated() {
+        if (this.calcuationsComplete != null) { return true; }
+        
+        if(this.songs != null && this.songs.length > 0){
+            for(let i = 0; i < this.songs.length; i++){
+                if(this.songs[i].bpm == null || this.songs[i].bpm == 0 || this.songs[i].beats.timeBetween == 0){
+                    return false;
+                }
+            }   
+            this.calculationsComplete = true;
+            return true;
+        }        
+        return false;
+    }
+    
+    // go to the previous song in the library.
+    previousSong() {
+        if(this.songs != null && this.songs.length > 1) {
+            this.songs.currentSong--;
+            if(this.songs.currentSong < 0) {
+                this.songs.currentSong = this.songs.length - 1;
+            }
+        }
+        else 
+        {
+            this.songs.currentSong = 0;
+        }
+    }
+    
+    // go to the next song in the library.
+    nextSong() {
+        if(this.songs != null && this.songs.length > 1) {
+            this.songs.currentSong++;
+            if(this.songs.currentSong >= this.songs.length) {
+                this.songs.currentSong = 0;
+            }
+        }
+        else 
+        {
+            this.songs.currentSong = 0;
+        }
+    }
+    
     // return the library in the form of a string.
     toString() {
         let str = "This MusicLibrary currently contains:\n";
@@ -309,9 +387,28 @@ class MusicLibrary {
             str += "[" + (i + 1) + "]: '" + this.songs[i].title + "' at '" + this.songs[i].path + "'";
             if(i < this.songs.length - 1) {
                 str += "\n";
-            }
+            }            
         } 
+        
+        str += "\n";
+        str += "Current Song: [" + this.songs.currentSong + "] '" + this.currentSong.title + "'\n";
+        str += "Total Songs: " + this.songs.length + ".\n";
         return str;
     }
-    
+        
+    // update the music library and currently playing music.
+    update() {        
+        
+        if(!this.temposCalculated) {                     
+            // count of loaded songs thus far.            
+            for(let i = 0; i < this.songs.length; i++){
+                // if(this.loadedIndices["key: " + i]) { continue; }
+                if(this.loadedIndices["key: " + i] == null && this.songs[i].beats.loaded === true) {
+                    this.songs.loadedSongs++;                    
+                    this.loadedIndices["key: " + i] = 'loaded';
+                }
+            }                        
+        }            
+    }
+        
 }

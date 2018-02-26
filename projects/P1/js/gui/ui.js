@@ -34,13 +34,24 @@ class BaseUIElement {
         
     // assign the callback function to the trigger parameter.
     rig(trigger) {
-        console.log("Rigging callback of " + this.name);
+        // console.log("Rigging callback of " + this.name);
         if(trigger = 'onclick') {
             this.element.onclick = this.callback;
         } 
         else if(trigger = 'onchange')
         {
             this.element.onchange = this.callback;
+        }
+        else if(trigger = 'oninput') 
+        { 
+            this.element.addEventListener('input', this.callback, false);
+            this.element.addEventListener('change', this.callback, false);
+        }
+        else if(trigger = 'onchecked') 
+        { 
+            this.element.addEventListener('input', this.callback, false);
+            this.element.addEventListener('change', this.callback, false);
+            this.element.addEventListener('checked', this.callback, false);
         }
     }
     

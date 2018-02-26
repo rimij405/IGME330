@@ -1,269 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>Project 1 - IGME 330 | Ian Effendi</title>
+        <title>Project 1</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1.0" />
         <link href="css/main.css" type="text/css" rel="stylesheet" />
-	<script>
-	// An IIFE ("Iffy") - see the notes in mycourses
-	(function(){
-		"use strict";
-		
-		var NUM_SAMPLES = 256;
-		var SOUND_1 = 'media/byebyebye.mp3';
-		var SOUND_4 = 'media/New Adventure Theme.mp3';
-		var SOUND_2 = 'media/Peanuts Theme.mp3';
-		var SOUND_3 = 'media/The Picard Song.mp3';
-		var SOUND_5 = 'media/downtheroad.mp3';
-		var audioElement;
-		var analyserNode;
-		var canvas,ctx;
-        let maxRadius = 200;
-        let invert = false, tintRed = false, noise = false, lines = false;
-        let filterAmount = 0;
-		
-		function init(){
-			// set up canvas stuff
-			canvas = document.querySelector('canvas');
-			ctx = canvas.getContext("2d");
-			
-			// get reference to <audio> element on page
-			audioElement = document.querySelector('audio');
-			
-			// call our helper function and get an analyser node
-			analyserNode = createWebAudioContextWithAnalyserNode(audioElement);
-			
-			// get sound track <select> and Full Screen button working
-			setupUI();
-			
-			// load and play default sound into audio element
-			playStream(audioElement,SOUND_1);
-			
-			// start animation loop
-			update();
-		}
-		
-		
-		function createWebAudioContextWithAnalyserNode(audioElement) {
-			var audioCtx, analyserNode, sourceNode;
-			// create new AudioContext
-			// The || is because WebAudio has not been standardized across browsers yet
-			// http://webaudio.github.io/web-audio-api/#the-audiocontext-interface
-			audioCtx = new (window.AudioContext || window.webkitAudioContext);
-			
-			// create an analyser node
-			analyserNode = audioCtx.createAnalyser();
-			
-			/*
-			We will request NUM_SAMPLES number of samples or "bins" spaced equally 
-			across the sound spectrum.
-			
-			If NUM_SAMPLES (fftSize) is 256, then the first bin is 0 Hz, the second is 172 Hz, 
-			the third is 344Hz. Each bin contains a number between 0-255 representing 
-			the amplitude of that frequency.
-			*/ 
-			
-			// fft stands for Fast Fourier Transform
-			analyserNode.fftSize = NUM_SAMPLES;
-			
-			// this is where we hook up the <audio> element to the analyserNode
-			sourceNode = audioCtx.createMediaElementSource(audioElement); 
-			sourceNode.connect(analyserNode);
-			
-			// here we connect to the destination i.e. speakers
-			analyserNode.connect(audioCtx.destination);
-			return analyserNode;
-		}
-		
-		function setupUI(){
-			document.querySelector("#trackSelect").onchange = function(e){
-				playStream(audioElement,e.target.value);
-			};
-			
-			document.querySelector("#fsButton").onclick = function(){
-				requestFullscreen(canvas);
-			};
-            
-            document.querySelector("#slider").onchange = function(e) {
-                document.querySelector("#sliderResults").innerHTML = e.target.value;
-                maxRadius = e.target.value;
-            };
-            
-            document.querySelector("#sld_Filter").onchange = function(e) {
-                document.querySelector("#sld_FilterResults").innerHTML = e.target.value;
-                filterAmount = e.target.value;
-            };
-            
-            document.querySelector("#chk_TintRed").onchange = function(e) {
-                tintRed = e.target.checked;
-            }
-            
-            document.querySelector("#chk_Invert").onchange = function(e) {
-                invert = e.target.checked;
-            }
-            
-            document.querySelector("#chk_Lines").onchange = function(e) {
-                lines = e.target.checked;
-            }
-            
-            document.querySelector("#chk_Noise").onchange = function(e) {
-                noise = e.target.checked;
-            }
-		}
-		
-		function playStream(audioElement,path){
-			audioElement.src = path;
-			audioElement.play();
-			audioElement.volume = 0.2;
-			document.querySelector('#status').innerHTML = "Now playing: " + path;
-		}
-		
-		function update() { 
-			// this schedules a call to the update() method in 1/60 seconds
-			requestAnimationFrame(update);
-			
-			/*
-				Nyquist Theorem
-				http://whatis.techtarget.com/definition/Nyquist-Theorem
-				The array of data we get back is 1/2 the size of the sample rate 
-			*/
-			
-			// create a new array of 8-bit integers (0-255)
-			var data = new Uint8Array(NUM_SAMPLES/2); 
-			
-			// populate the array with the frequency data
-			// notice these arrays can be passed "by reference" 
-			analyserNode.getByteFrequencyData(data);
-		
-			// OR
-			//analyserNode.getByteTimeDomainData(data); // waveform data
-			
-			// DRAW!
-			ctx.clearRect(0,0,800,600);  
-			var barWidth = 4;
-			var barSpacing = 1;
-			var barHeight = 100;
-			var topSpacing = 50;
-			
-			// loop through the data and draw!
-			for(var i=0; i<data.length; i++) { 
-				ctx.fillStyle = 'rgba(0,255,0,0.6)'; 
-				
-                // Drawing spheres instead of rectangles.
-                ctx.moveTo(i * (barWidth + barSpacing), 0);
-                ctx.beginPath();
-                ctx.arc(i * (barWidth + barSpacing), topSpacing + 256 - data[i], 5, 0, 2 * Math.PI, false);
-                ctx.fill();
-                ctx.closePath();
-                
-				// the higher the amplitude of the sample (bin) the taller the bar
-				// remember we have to draw our bars left-to-right and top-down
-				// ctx.fillRect(i * (barWidth + barSpacing),topSpacing + 256-data[i],barWidth,barHeight); 
-				
-                // draw inverted bars
-                // ctx.fillRect(640 - i * (barWidth + barSpacing), topSpacing + 256 - data[i] - 20, barWidth, barHeight);
-                
-                // reddish circles
-                let percent = data[i] / 255;
-                let circleRadius = percent * maxRadius;
-                ctx.beginPath();
-                ctx.fillStyle = makeColor(255, 111, 111, .34 - percent/3.0);
-                ctx.arc(canvas.width / 2, canvas.height / 2, circleRadius, 0, 2 * Math.PI, false);
-                ctx.fill();
-                ctx.closePath(); 
-                
-                // blue-ish circles, bigger, more transparent.
-                ctx.beginPath();
-                ctx.fillStyle = makeColor(0, 0, 255, .10 - percent/10.0);
-                ctx.arc(canvas.width / 2, canvas.height / 2, circleRadius * 1.5, 0, 2 * Math.PI, false);
-                ctx.fill();
-                ctx.closePath();
-                
-                // yellow-ish circles, smaller
-                ctx.save();
-                ctx.beginPath();
-                ctx.fillStyle = makeColor(200, 200, 0, .5 - percent/5.0);
-                ctx.arc(canvas.width / 2, canvas.height / 2, circleRadius * 0.5, 0, 2 * Math.PI, false);
-                ctx.fill();
-                ctx.closePath();
-                ctx.restore();       
-                
-			}
-			 
-            // Manipulate the pixles of the canvas.
-            manipulatePixels();            
-		} 
-		
-		// HELPER
-        function manipulatePixels() {
-            let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            let data = imageData.data;
-            let length = data.length;
-            let width = imageData.width;
-            
-            for(let i = 0; i < length; i += 4) {
-                if(tintRed) {
-                    data[i] = data[i] + 100;
-                }
-                
-                if(invert) {
-                    let red = data[i], green = data[i + 1], blue = data[i + 2];
-                    data[i] = 255 - red;
-                    data[i + 1] = 255 - green;
-                    data[i + 2] = 255 - blue;                    
-                }
-                
-                if(noise && Math.random() < 0.10) {
-                    data[i] = data[i + 1] = data[i + 2] = 128;
-                }
-                
-                if(lines) {
-                    let row = Math.floor(i / 4 / width);
-                    if(row % 50 == 0) {
-                        data[i] = data[i + 1] = data[i + 2] = data[i + 3] = 255;
-                        data[i + (width * 4)] = data[i + (width * 4) + 1] = data[i + (width * 4) + 2] = data[i + (width * 4) + 3] = 255;                        
-                    }
-                }
-                
-                if(filterAmount > 0) {
-                    if(data[i] < filterAmount) {
-                        data[i] = 0;
-                    }
-                    
-                    if(data[i + 2] < filterAmount) {
-                        data[i + 2] = 255;
-                    }
-                }
-            }
-            
-            ctx.putImageData(imageData, 0, 0);            
-        }
-                
-		function makeColor(red, green, blue, alpha){
-   			var color='rgba('+red+','+green+','+blue+', '+alpha+')';
-   			return color;
-		}
-		
-		 // FULL SCREEN MODE
-		function requestFullscreen(element) {
-			if (element.requestFullscreen) {
-			  element.requestFullscreen();
-			} else if (element.mozRequestFullscreen) {
-			  element.mozRequestFullscreen();
-			} else if (element.mozRequestFullScreen) { // camel-cased 'S' was changed to 's' in spec
-			  element.mozRequestFullScreen();
-			} else if (element.webkitRequestFullscreen) {
-			  element.webkitRequestFullscreen();
-			}
-			// .. and do nothing if the method is not supported
-		};
-		        
-		window.addEventListener("load",init);
-	}());
-		
-	</script>
     </head>
-    <body class="background-black">  
-             
+    <body class="background-black">
+        
         <header class="background-shade">
             <span class="spacer" data-background="base"></span>        
             <span class="spacer" data-background="accent"></span>        
@@ -282,59 +26,224 @@
                     <span class="spacer"></span>
                     <p class="center small">Utilize the controls to play around with the visualizer.</p>
                     <span class="spacer background-highlight"></span>
-                    <div id="controls" class="container">
-                        <div>               
-                            <label class="small">Track Selection: 
-                                <select id="trackSelect" >
-                                    <option value="media/byebyebye.mp3">Bye, Bye, Bye</option>
-                                    <option value="media/New Adventure Theme.mp3">New Adventure Theme</option>
-                                    <option value="media/Peanuts Theme.mp3">Peanuts Theme</option>
-                                    <option value="media/The Picard Song.mp3">The Picard Song</option>
-                                    <option value="media/downtheroad.mp3">Down the Road</option>
-                                </select>
-                            </label>   
-                            <span class="spacer background-highlight"></span>                     
-                        </div>                      
-                        <div>
-                            <label class="small" for='sld_Filter'>Filter: </label>
-                            <input type='range' id='sld_Filter' min='0' max='255' step='1' value='0' />
-                            <span class="small" id='sld_FilterResults'>0</span>
-                            <p class="small">When non-zero, this filter affects the individiual color values of pixels. When the red value is less than the slider amount, it will be set to zero. Whereas, when the green value is less than the slider amount, it will be set to 255.</p>
-                            <span class="spacer background-highlight"></span>   
-                        </div>
-                        <div>
-                            <input type='checkbox' id='chk_TintRed' name='tintRed'>
-                            <label class="small" for='chk_TintRed'> Tint Red |</label>
-                            <input type='checkbox' id='chk_Invert' name='invert'>
-                            <label class="small" for='chk_Invert'> Invert |</label>
-                            <input type='checkbox' id='chk_Noise' name='noise'>
-                            <label class="small" for='chk_Noise'> Noise |</label>
-                            <input type='checkbox' id='chk_Lines' name='lines'>
-                            <label class="small" for='chk_Lines'> Lines</label>
-                        </div>
-                        <div>
-                            <label class="small" for='slider'>Max Radius: </label>
-                            <input id='slider' type='range' min='1' max='400' step='5' value='200.0'/>
-                            <span class="small" id='sliderResults'>200</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="container cornsilk-text">
-                <div class="panel background-black border border-accent">  
-                    <p id="status" class="center small">Now Playing: ???</p>
-                    <div class="center">
-                        <canvas id="canvas" width="640" height="400">
-                            <p class="center">Your browser doesn't support canvas elements!</p>
-                        </canvas>  
-                    </div>
-                    <div class="center">
-                        <audio controls loop></audio>
-                        <button id="fsButton">GO FULLSCREEN</button>
-                    </div>                       
                 </div>
             </div>            
+        
+            <div class="container cornsilk-text">
+                <div class="panel background-black">  
+                    <div class="center">
+                        <canvas id="uiCanvas" width="400" height="300" style="position: absolute;">
+                            <p>Your browser doesn't support the canvas object...</p>
+                        </canvas>
+                        <canvas id="mainCanvas" width="400" height="300">
+                            <p>Your browser doesn't support the canvas object...</p>
+                        </canvas>
+                    </div>
+                    <div class="center">
+                        <audio controls controlsList="nodownload"></audio>
+                    </div>                       
+                </div>
+            </div>   
+                
+            <div class="container cornsilk-text">
+                <div class="panel background-shade border border-accent">
+                    <div id="controls" class="container">
+                        
+                        <h3 class="center">Controls</h3>
+                        
+                        <div class="center">         
+                            <!-- Track Selection -->      
+                            <label id="trackSelectLabel" class="small">Track Selection:
+                            </label>
+                            <select id="trackSelect" >
+                                <option value="media/Sweet Dreamz.mp3" data-artist="" data-lower="100" data-upper="200">Sweet Dreamz</option>
+                                <option value="media/Down the Road.mp3" data-artist="" data-source="" data-lower="100" data-upper="200">Down the Road</option>
+                                <option value="media/Delta.mp3" data-artist="" data-lower="100" data-upper="200">Delta</option>
+                                <option value="media/Arcades.mp3" data-artist="" data-lower="100" data-upper="200">Arcades</option>
+                                <option value="media/Happy.mp3" data-artist="" data-lower="100" data-upper="200">Happy</option>
+                            </select>
+                            
+                            <!-- Visualization Controls -->    
+                            <label id="dataSelectLabel" class="small">Visualization Type:
+                            </label>
+                            <select id="dataSelect" >
+                                <option value="frequency">Frequency</option>                
+                                <option value="waveform">Waveform</option>
+                            </select>
+                            
+                            <span class="spacer background-highlight"></span>       
+                        </div>
+
+                        <!-- Audio Filter Controls -->     
+                        <div id="filterOptions">
+                            <label id="filterLabel" for="#filterSelect" class="small">Filter Type:</label>
+                            <select id="filterSelect" >
+                                <option value="allpass">allpass</option>
+                                <option value="lowpass">lowpass</option>                
+                                <option value="highpass">highpass</option>        
+                                <option value="bandpass">bandpass</option>        
+                                <option value="lowshelf">lowshelf</option>       
+                                <option value="highshelf">highshelf</option>       
+                                <option value="peaking">peaking</option>    
+                                <option value="notch">notch</option>    
+                            </select><br/>
+
+                            <label id="frequencyLabel" for="#frequencySlider" class="small">Frequency: 350 Hz</label>
+                            <input id="frequencySlider" type="range" min="20" max="20000" value="350" class="slider" step="100" /><br/>
+
+                            <label id="detuneLabel" for="#detuneSlider" class="small">Detune: 0 cents</label>
+                            <input id="detuneSlider" type="range" min="-1200" max="1200" value="0" class="slider" step="100" /><br/>
+
+                            <label id="qLabel" for="#qSlider" class="small">Quality: 0.001</label>
+                            <input id="qSlider" type="range" min="0.001" max="10" value="0.001" class="slider" step="0.001" /><br/>
+
+                            <span class="spacer background-highlight"></span>       
+                        </div>
+                        
+                        <div>
+                            <div>
+                                <label for="#showBarsCheckbox">Display Bars: </label>
+                                <input id="showBarsCheckbox" type="checkbox" class="checkbox" checked />
+                            </div>
+
+                            <div>
+                                <label for="#showCurvesCheckbox">Display Curves: </label>
+                                <input id="showCurvesCheckbox" type="checkbox" class="checkbox" checked />
+                            </div>
+
+                            <div>
+                                <label for="#showCirclesCheckbox">Display Inner Circles: </label>
+                                <input id="showCirclesCheckbox" type="checkbox" class="checkbox" checked />
+                                <br/>
+                                <label id="radiusLabel" for="#radiusSlider">Circle Radius: 50px</label><br/>
+                                <input id="radiusSlider" type="range" min="0" max="200" value="50" class="slider" step="10" list="radiusStepList"/>
+                                <datalist id="radiusStepList" style="display:none;">
+                                    <option>50</option>
+                                    <option>100</option>
+                                    <option>150</option>
+                                </datalist>
+                            </div>                    
+
+                            <!-- 
+                            <div>
+                                <label for="#tintCheckbox">Tint: </label>
+                                <input id="tintCheckbox" type="checkbox" class="checkbox" />
+                            </div>
+
+                            <div>
+                                <label for="#noiseCheckbox">Noise: </label>
+                                <input id="noiseCheckbox" type="checkbox" class="checkbox" />
+                            </div>  -->
+                            <span class="spacer background-highlight"></span>                          
+                        </div>
+
+
+                        <div id="miscOptions">
+                            <h3 class="small center">Various Effects</h3>
+                            <div>
+                                <label id="volumeLabel" class="small">Volume: 20
+                                </label>
+                            </div>
+                            <div>
+                                <input id="volumeSlider" type="range" min="0" max="100" value="20" class="slider" step="10" list="volumeStepList"/>
+                                <datalist id="volumeStepList" style="display:none;">
+                                    <option>10</option>
+                                    <option>20</option>
+                                    <option>30</option>
+                                    <option>40</option>
+                                    <option>50</option>
+                                    <option>60</option>
+                                    <option>70</option>
+                                    <option>80</option>
+                                    <option>90</option>
+                                </datalist>
+                            </div>
+                            <div>
+                                <label id="delayLabel" class="small">Delay: 0
+                                </label>
+                            </div>
+                            <div>
+                                <input id="delaySlider" type="range" min="0" max="5" value="0" class="slider" step="0.25" list="delayStepList" />
+                                <datalist id="delayStepList" style="display:none;">
+                                    <option>1</option>
+                                    <option>2</option>
+                                    <option>3</option>
+                                    <option>4</option>
+                                </datalist>                        
+                            </div>
+                            
+                            <div>
+                                <label id="distortionLabel" class="small">Distortion Seed: 100
+                                </label>
+                            </div>
+                            
+                            <div>
+                                <input id="distortionSlider" type="range" min="0" max="400" value="100" class="slider" step="1" list="distortionStepList" />
+                                <datalist id="distortionStepList" style="display:none;">
+                                    <option>50</option>
+                                    <option>100</option>
+                                    <option>150</option>
+                                    <option>200</option>
+                                    <option>250</option>
+                                    <option>300</option>
+                                    <option>350</option>
+                                </datalist>
+                            </div>
+                            
+                            <div>
+                                <button id="muteButton" type="button">Mute</button>    
+                            </div>
+                            
+                            <span class="spacer background-highlight"></span>   
+                        </div>
+
+                        <div id="canvasOptions">  
+
+                            <div id="filterOptions">
+                                <input type="radio" name="filterSelect" value="none" checked/>None |
+                                <input type="radio" name="filterSelect" value="blur"/>Blur |
+                                <input type="radio" name="filterSelect" value="sepia"/>Sepia  |
+                                <input type="radio" name="filterSelect" value="grayscale"/>Grayscale  |
+                                <input type="radio" name="filterSelect" value="invert"/>Invert <br />      
+                                <input id="filterSlider" title="Amount to apply of the above effect." type="range" min="0" max="100" value="0" class="slider" step="1" list="filterStepList" />
+                                <datalist id="filterStepList" style="display:none;">
+                                    <option>10</option>
+                                    <option>20</option>
+                                    <option>30</option>
+                                    <option>40</option>
+                                    <option>50</option>
+                                    <option>60</option>
+                                    <option>70</option>
+                                    <option>80</option>
+                                    <option>90</option>
+                                </datalist>
+
+                                <span class="spacer background-highlight"></span>   
+                            </div>
+
+                            <div id="compressorOptions">
+
+                                <h3 class="center small">Compressor</h3>
+                                <label id="thresholdLabel" for="#thresholdSlider" class="small">Threshold: -24db</label>
+                                <input id="thresholdSlider" type="range" min="-100" max="0" value="-24" class="slider" step="1" /><br/>
+
+                                <label id="kneeLabel" for="#kneeSlider" class="small">Knee: 30x</label>
+                                <input id="kneeSlider" type="range" min="0" max="40" value="30" class="slider" step="1" /><br/>
+
+                                <label id="ratioLabel" for="#ratioSlider" class="small">Ratio: 12db</label>
+                                <input id="ratioSlider" type="range" min="1" max="20" value="12" class="slider" step="1" /><br/>
+
+                                <label id="attackLabel" for="#attackSlider" class="small">Attack: 0.003 ms</label>
+                                <input id="attackSlider" type="range" min="0" max="1" value="0.003" class="slider" step="0.001" /><br/>
+
+                                <label id="releaseLabel" for="#releaseSlider" class="small">Release: 0.25 ms</label>
+                                <input id="releaseSlider" type="range" min="0" max="1" value="0.25" class="slider" step="0.001" /><br/>
+
+                            </div>
+                        </div>                        
+                    </div>
+                </div>
+            </div>                 
         </section>
         
         <span class="spacer" data-size="10"></span>  
@@ -352,5 +261,26 @@
             <span class="spacer" data-background="base"></span>  
             <p class="center cornsilk-text">(C) 2018 - Ian Effendi - IGME 330</p>   
         </footer>
-    </body>    
+                
+        <!-- Import Utility scripts -->
+        <script src="js/util/utilities.js"></script>
+        <script src="js/util/circle.js"></script>
+        
+        <!-- Import Sound media scripts -->
+        <script src="js/sfx/audio.js"></script>
+        <script src="js/sfx/music.js"></script>
+        
+        <!-- Import UI scripts -->
+        <script src="js/gui/ui.js"></script>
+        <script src="js/gui/ui-select.js"></script>
+        <script src="js/gui/ui-button.js"></script>
+        <script src="js/gui/ui-slider.js"></script>
+        <script src="js/gui/ui-checkbox.js"></script>
+        
+        <!-- Misc scripts -->
+        <script src="js/main-properties.js"></script>
+        <script src="js/main-factories.js"></script>
+        <script src="js/main-functions.js"></script>
+        <script src="js/util/loader.js"></script>
+    </body>
 </html>
