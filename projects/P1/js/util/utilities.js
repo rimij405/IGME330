@@ -17,7 +17,7 @@ function makeColor(red, green, blue, alpha){
 function log(message = "", debug = true) {
     if(debug != null && message != null) {
         if(debug == true){
-            console.log(message);   
+            // console.log(message);   
         }
     }
 }

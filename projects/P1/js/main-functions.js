@@ -678,7 +678,7 @@ application.main = application.main || {
 
                         let waves = this.circles.waveform || new Circle(options.size);
                         waves.setColor(46, 11, 5, 1.0 - (options.percent));
-                        console.log(1.0 - options.percent);
+                        // console.log(1.0 - options.percent);
                         // options.name = undefined; //"waves";
                         waves.draw(e.context, options);
                     }
@@ -702,6 +702,7 @@ application.main = application.main || {
         }
     },
     
+    // draws the curves for the visualizer.
     drawCurves: function(e, data, flip = 1) {        
         if(e == null) { e = this.props; }
         if(data == null) { data = e.audio.analyzerNode.getData(); }        
@@ -834,6 +835,7 @@ application.main = application.main || {
         }
     },
     
+    // draws the bars as lines.
     drawBars: function(e, data) {
         if(e == null) { e = this.props; }
         if(data == null) { data = e.audio.analyzerNode.getData(); }        
@@ -898,6 +900,8 @@ application.main = application.main || {
         }
     },
     
+    
+    // applies any effects to the canvas.
     drawEffects: function(e){
         if(e == null) { e = this.props; }
                         
@@ -973,6 +977,7 @@ application.main = application.main || {
         this.print("DEBUG: " + message, this.debug);
     },
             
+    // plays the current song.
     playStream: function(e) {
         if(e == null) { e = this.props; }  
         e.audio.source = e.library.currentSong.path;           
@@ -983,6 +988,7 @@ application.main = application.main || {
         e.ATTRIBUTES.TIME.START = e.audio.audioContext.currentTime;   
     },
     
+    // clears the screen.
     clearScreen: function(e) {
         if(e == null) { e = this.props; }
         e.context.save();

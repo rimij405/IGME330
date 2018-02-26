@@ -223,16 +223,16 @@ class AudioElement {
                                 
         // private, internal functions.
         this.init = function() {
-            console.log("Initializing the audio element.");
+            // console.log("Initializing the audio element.");
             this.audioElement = document.querySelector('audio');
             
-            console.log("Creating the audio context.");
+            // console.log("Creating the audio context.");
             this.audioContext = new (window.AudioContext || window.webkitAudioContext);
             
-            console.log("Creating and hooking the source node.");
+           //  console.log("Creating and hooking the source node.");
             this.sourceNode = this.audioContext.createMediaElementSource(this.audioElement);
             
-            console.log("Creating collection for analyzer nodes.");
+            // console.log("Creating collection for analyzer nodes.");
             this.audioNodes = [];
             this.audioNodes.push(this.sourceNode);
             this.sourceNode.connect(this.audioContext.destination);
@@ -266,11 +266,11 @@ class AudioElement {
     
     addNode(node) {
         if(node != null) {
-            console.log("Adding node to context.");
+            // console.log("Adding node to context.");
             
             // Add node to chain.
             this.audioNodes.push(node);
-            console.dir(node);
+            // console.dir(node);
             
             // console.log("Updating node connection destinations.");
             // for(let i = 0; i < this.audioNodes.length - 1; i++) {
@@ -303,7 +303,7 @@ class AudioElement {
     }
     
     addDistortionNode() {
-        console.log("Adding a new distortion node.");
+        // console.log("Adding a new distortion node.");
         let node = new DistortionNode(this.audioContext);
         // this.addNode(node);
         
@@ -311,7 +311,7 @@ class AudioElement {
     }
     
     addDelayNode() {
-        console.log("Adding a new delay node.");
+        // console.log("Adding a new delay node.");
         let node = new DelayNode(this.audioContext);
         // node.connect(this.audioContext.destination);
         // this.addNode(node);
@@ -321,7 +321,7 @@ class AudioElement {
     
     addAnalyzerNode(samples = 256, waveform = false) {
         if(waveform == null) { waveform = application.props.FLAGS.WAVEFORM_MODE; }
-        console.log("Adding a new analyzer node.");
+        // console.log("Adding a new analyzer node.");
         let node = new AnalyzerNode(this.audioContext, samples);
         node.setWaveformMode(waveform);
         this.addNode(node);     
