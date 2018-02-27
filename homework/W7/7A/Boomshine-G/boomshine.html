@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<style>
+		canvas { 
+            border: 1px solid gray;
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            z-index: 0;        
+        }
+        
+        #button1 {
+            font-size: 24pt;
+            border-radius: 15px;
+            position: absolute;
+            top: 150px;
+            left: 270px;
+            z-index: 1;
+        }
+        
+        #button1:hover {
+            background-color: #fff;
+        }
+        
+        #button1:focus {
+            outline: 0;
+        }
+        
+        #audioControls { display: none; }
+    
+        
+	</style>
+	<title>Boomshine</title>
+</head>
+<body>
+	<canvas>
+		Get a real browser!
+	</canvas>
+    <section id="audioControls">
+        <audio id="bgAudio" src="media/background.mp3" controls loop></audio>
+    </section>
+    <button id="button1">Click Me!</button>
+	<script src='js/utilities.js'></script>
+	<script src='js/loader.js'></script>
+	<script src='js/main.js'></script>
+    <script src='js/keys.js'></script>
+    <script src='js/sound.js'></script>
+    <script src='js/emitter.js'></script>
+</body>
+</html>
