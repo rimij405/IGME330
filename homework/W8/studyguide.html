@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Study Guide Environment</title>
+    </head>
+    <body>
+                
+        <script>
+            "use strict";
+            
+            let body = document.querySelector("body");
+            
+            // question methods.
+                                          
+            function q5 () {
+                
+                // Create the dropdown.
+                body.appendChild(createButton("button1", "Click Here!"));
+                body.appendChild(createSpace());                
+                
+                // Retrieve the dropdown.
+                let button = document.querySelector("#button1");
+                button.onclick = e => console.log(`Clicked ${e.target.title} button.`);
+            }
+                              
+            function q6 () {
+                
+                // Create the dropdown.
+                body.appendChild(createDropdown("dropdown1", [ 1, 2, 3 ]));
+                body.appendChild(createSpace());                
+                
+                // Retrieve the dropdown.
+                let dropdown = document.querySelector("#dropdown1");
+                dropdown.onchange = e => console.log(e.target.value);
+            }
+            
+            function q7 () {                
+                var myNum = 0;                                
+                console.log(myNum);
+            }
+            
+            function q20 () {
+                let obj = {
+                    x: 5,
+                    y: 10,
+                    move: function() {
+                        this.x++;
+                        this.y++;
+                    }
+                }
+                
+                console.log(obj);
+                
+                obj.move();                
+                console.log(obj);    
+                
+                obj.moveBack = function() {
+                    this.x--;
+                    this.y--;
+                }
+                obj.moveBack();
+                console.log(obj);
+                
+            }
+            
+            // factory methods.
+            
+            function createSpace(){                
+                // Create the space.
+                return document.createElement("br");
+            }
+            
+            function createDropdown(id, options) {
+                if(id == null) { id = "dropdown1"; }
+                if(options == null) { options = [ 0, 1, 2, 3, 4 ]; }
+                
+                // Create the dropdown element.
+                let select = document.createElement("select");
+                select.id = id;
+                
+                // Create the dropdown element's options.                
+                options.forEach((item, index, array) => {
+                    let option = document.createElement("option");
+                    option.value = `${item}`;
+                    option.textContent = item;
+                    select.appendChild(option);
+                });
+
+                // set the selection index.
+                select.selectedIndex = 0;
+                
+                // return the newly created dropdown element.
+                return select;                
+            }
+            
+            function createButton(id, title) {
+                if(id == null) { id = "button1"; }
+                if(title == null) { title = "Click Me!"; }
+                
+                // Create the dropdown element.
+                let button = document.createElement("button");
+                button.id = id;
+                button.title = `${title}`;
+                button.textContent = `${title}`;
+                
+                // return the newly created dropdown element.
+                return button;       
+            }
+            
+            // loading methods.
+            
+            function init() {
+                q5();
+                q6();
+                q7();
+                q20();
+            };     
+            
+            window.onload = init;            
+        </script>
+    </body>
+</html>
