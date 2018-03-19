@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>XHR Text Example</title>
+	<style>
+		*{
+			font-family:tahoma,verdana,sans-serif;
+            line-height: 1.15;
+            margin: 0;
+		}
+        
+        body {
+            margin: 25px;
+            background: #fff;
+            transition: background 0.4s ease;
+        }
+        
+        body:hover {
+            background: #ccc;
+            transition: background 0.4s ease;
+        }
+        
+        select:hover {
+            cursor: pointer;
+        }
+        
+        h1 {
+            margin: 10px;
+        }
+        
+        p, div {
+            margin: 5px 10px;
+            font-size: 12px;   
+        }
+        
+        .subtitle {
+            font-style: italic;
+            font-size: 10px;   
+        }
+        
+        div {
+            width: 325px;
+        }
+        
+        div#controls {
+            margin-top: 15px;
+            padding-bottom: 15px;
+        }
+        
+        div#content {
+            margin-top: 5px;
+            padding: 25px;
+            border-top: 1px solid black;
+            border-bottom: 1px solid black;
+            background: #ddd;
+            transition: background 0.4s ease;
+        }
+        
+        div#content:hover {
+            background: #fff;
+            transition: background 0.4s ease;
+        }
+        
+        #content p, #content ul {
+            margin-bottom: 15px;
+            transition: margin 0.4s ease;
+        }       
+        
+        #content p:hover {
+            margin-bottom: 17px;
+            transition: margin 0.4s ease;
+        }    
+        
+        #content ul li {
+            margin-bottom: 0px;
+            transition: margin 0.4s ease;
+        }
+        
+        #content ul:hover li {
+            margin-bottom: 5px;
+            transition: margin 0.4s ease;
+        }
+        
+	</style>
+	<script>
+	(function(){
+		window.onload = init;
+		
+		function init(){
+			document.querySelector('#fetchData').onchange = (e) => {
+                loadData(e.target.value);
+            };
+            
+            // Initialize it.
+            loadData();
+		}
+		
+		function loadData(filename = "hello.txt"){
+			var xhr = new XMLHttpRequest();
+		
+			xhr.onload = function(){
+				var response = xhr.responseText;
+				document.querySelector('#content').innerHTML = response;
+			}
+			
+			var url = filename;
+			xhr.open('GET',url,true);
+			// try to prevent browser caching by sending a header to the server
+			xhr.setRequestHeader("If-Modified-Since", "Sat, 1 Jan 2010 00:00:00 GMT");
+			xhr.send();
+		}
+	
+	}())
+	</script>
+</head>
+<body>
+    
+    <h1>XHR Text Example</h1>
+    <p class="subtitle">Use the select statement below to change the displayed text.</p> 
+    
+    <div id="controls">
+        <label for="#fetchData">Text to Display:</label>
+        <select id="fetchData">
+            <option value="hello.txt">Hello World</option>
+            <option value="minitrue.txt">The Ministry of Truth</option>
+            <option value="jaberwocky.txt">Jaberwocky</option>
+        </select> 
+    </div>
+    
+	<div id='content'></div>
+	
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>XHR CSV Example</title>
+	<style>
+		canvas{
+			border:1px solid black;
+			background: lightgray;
+		}
+	</style>
+	<script>
+	(function(){
+		window.onload = init;
+		
+		function init(){
+			document.querySelector('#mybutton').onclick = loadData;
+		}
+		
+		function loadData(){
+			var xhr = new XMLHttpRequest();
+		
+			xhr.onload = function(){
+				var response = xhr.responseText;
+				var gridArray = response.split('\n');
+				for(var i=0;i<gridArray.length;i++){
+					var line = gridArray[i];
+					gridArray[i]= line.split(',');
+				}
+	
+				drawGrid(gridArray);
+			}
+			var url = "watch.txt";
+			xhr.open('GET',url,true);
+			// try to prevent browser caching by sending a header to the server
+			xhr.setRequestHeader("If-Modified-Since", "Sat, 1 Jan 2010 00:00:00 GMT");
+			xhr.send();
+		}
+		
+		function drawGrid(grid){
+			var canvas = document.querySelector('canvas');
+			var ctx = canvas.getContext('2d');
+			var cellWidth = canvas.width/grid.length;
+			var COLORS = ["rgba(0,0,0,0)","white","black","red","green","blue","yellow","magenta"];
+			var halfWidth = cellWidth/2.0;
+			for (var i=0; i<grid.length;i++){
+				for (var j=0; j<grid[i].length; j++){
+					var value = grid[i][j];
+					ctx.fillStyle = COLORS[value];
+					
+					// ctx.fillRect(j*cellWidth,i*cellWidth,cellWidth,cellWidth);
+                    
+                    var halfWidth = cellWidth / 2.0;                                        
+					
+					ctx.beginPath();
+					ctx.arc(halfWidth + j*cellWidth,halfWidth + i*cellWidth,halfWidth,0,2*Math.PI);
+					ctx.fill();
+					ctx.closePath()
+					
+				} 
+			
+			}
+			
+		}
+	
+	}())
+	</script>
+</head>
+<body>
+	<p><button id='mybutton'>Fetch Data</button></p>
+	<canvas width='320' height='320'>Get a real browser!</canvas>
+	
+</body>
+</html>
