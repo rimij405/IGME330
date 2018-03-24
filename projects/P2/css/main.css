@@ -1,0 +1,38 @@
+/* 
+    Main.css - Project 2 styling for the testing page.
+    Ian Effendi (iae2784@g.rit.edu)
+*/
+
+html, body, 
+h1, h2, h3, h4, h5, h6,
+p, #mainCanvas {
+    margin: 0px;
+    padding: 0px;
+}
+
+body {
+    padding: 25px;
+    margin: 0px auto;
+}
+
+.center {
+    display: block;
+    margin: 0px auto;
+}
+
+.center-text {
+    text-align: center;
+}
+
+#mainCanvas {
+    display: block;
+    margin: 0px auto;
+    margin-top: 5px;
+    border: 1px solid rgba(21, 21, 21, 0.2);
+    transition: border 0.5s ease;    
+}
+
+#mainCanvas:hover {    
+    border: 1px solid #212121;
+    transition: border 0.2s ease;    
+}
