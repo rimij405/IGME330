@@ -1,5 +1,5 @@
 /*
-    debug.js
+    app/debug.js
     Dependencies: ---
     Description: singleton object
     Creates a debugger object.
@@ -19,10 +19,10 @@ app.debug = {
     flag: true,
     
     // debugger.
-    break: function(callingMethod, lineNumber){
+    break: function(callingMethod = 'Unknown Method', lineNumber = 'unknown line'){
         if(this.flag) {
-            if(callingMethod == null || typeof callingMethod === 'number') { callingMethod = "Unknown Method"; }
-            if(lineNumber == null || typeof lineNumber !== 'number') { lineNumber = "unknown line"}
+            if(typeof callingMethod === 'number') { callingMethod = 'Unknown Method'; }
+            if(typeof lineNumber !== 'number') { lineNumber = "unknown line"; }
             else { lineNumber = `line [${lineNumber}]`; }
             console.log(`Breakpoint set by ${callingMethod} on ${lineNumber}.`);
             debugger;
@@ -32,7 +32,7 @@ app.debug = {
     // debug console.dir() method.
     dir: function(obj) { 
         if(this.flag) { 
-            console.dir(`${obj}`); 
+            console.dir(obj); 
         } 
     },
         

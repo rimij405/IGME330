@@ -1,8 +1,8 @@
 /*
-    loader.js
+    app/loader.js
     Dependencies:
-    - main.js
-    - debug.js
+        - main.js
+        - debug.js
     Description: singleton object
     Creates the global 'app' and loads in the other classes.
     ---
@@ -23,11 +23,11 @@ window.onload = function() {
 // On loss of focus
 window.onblur = function() {
     app.debug.print('blur at' + Date());
-    // app.main.pauseGame(); 
+    app.main.pause(); 
 }
 
 // On regain of focus
 window.onfocus = function() {
     app.debug.print('focus at ' + Date());
-    // app.main.resumeGame();    
+    app.main.resume();    
 }
