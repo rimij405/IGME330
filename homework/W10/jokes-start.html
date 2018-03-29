@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>XHR XML Example</title>
+	<style>
+		* {
+			font-family:tahoma,verdana,sans-serif;
+		}
+        
+        body {
+            margin: 0px 50px;
+        }
+        
+        .joke {
+            margin: 15px 15px 15px 0px;
+            padding: 15px;
+            border: 1px solid black;
+        }
+	</style>
+	<script>
+	
+	"use strict";
+	
+	(function(){
+		window.onload = init;
+		
+		function init(){
+			document.querySelector('#mybutton').onclick = loadData;
+		}
+        
+        // append classes to the element.
+        function appendClasses(classList = []){
+            for(const cl of classList) {
+                console.log(`Adding class ${cl} to element ${this}.`);
+                appendClass.call(this, cl);
+            }
+            console.dir(this);
+        }        
+        
+        // append a single class to an element.
+        function appendClass(cl = ""){
+            let className = cl.trim();
+            if(className.length > 0) { this.classList.add(className); };            
+        }
+        
+        // append children to an element.
+        function appendChildren(children = []){  
+            for(const childNode of children) {
+                console.dir(childNode);
+                console.log(`Adding child ${childNode} to parent element ${this}.`);
+                addChild.call(this, childNode);
+            }
+            console.dir(this);
+            return this;
+        }
+        
+        // append a single child to an element.\
+        function addChild(childNode){
+            console.dir(childNode);
+            console.log(`Adding child: ${childNode}`);
+            if(childNode != null) { this.appendChild(childNode); };
+            return this; // for method chaining.
+        }
+        
+        // create a div element.
+        function createHTMLElement({id = "", selector = "", textContent = "", children = [], classList = []}) {
+            let element = document.createElement(selector);
+            if(id != null && id.trim().length > 0) { element.id = id.trim(); }
+            element.textContent = textContent;
+            
+            // will only work if there are any children at all, anyway.
+            // receives closure from createHTMLElement, allowing us to pass in our element and the children.
+            appendChildren.call(element, children);
+            appendClasses.call(element, classList);
+            
+            // returns the newly created element.
+            return element;
+        }
+        
+        // create a paragraph element.
+        function createParagraph({id = "", textContent = "", children = [], classList = []}){
+            return createHTMLElement({id, selector: 'p', textContent, children, classList});
+        }
+        
+        // create a heading element.
+        function createHeading({id = "", level = 1, textContent = "", children = [], classList = []} = {}){        
+            
+            // create selector for a heading.
+            let selector = ((l) => {
+                return `h${((l <= 6 && l >= 1) ? l : 1)}`;
+            })(level);
+                                        
+            // return the created HTML DOM element.
+            return createHTMLElement({id, selector, textContent, children, classList});
+        }
+        
+        // create a section element.
+        function createSection({id = "", textContent = "", children = [], classList = []} = {}){
+            return createHTMLElement({id, selector: 'section', textContent, children, classList});
+        }        
+        
+        // process joke function. 
+        // (cool note. If you don't do {...} = {}, you won't get optional values.
+        // But, parsers like Brackets will use intellisense to return back types!)
+        function createJoke({id = -1, node = {}, components = [''], attributes = ['']}) {            
+            let joke = {
+                id,
+                toString() {
+                    return `Joke\nRating: [${this.rating}]\nQ: ${this.question}\nA: ${this.answer}`;
+                }                
+            };     
+            
+            // let components = ['question', 'answer'];
+            for(let key of components) {
+                joke[key] = node.querySelector(key).firstChild.nodeValue;
+            }
+            
+            // let attributes = ['rating'];            
+            for(let key of attributes) {
+                joke[key] = node.getAttribute(key);
+            }            
+            
+            return joke;
+        }
+        
+		
+		function loadData(){
+			var xhr = new XMLHttpRequest();
+			var allJokes =[];
+			xhr.onload = function(){
+                // create heading for the section
+                var jokesHeading = createHeading({
+                    id: "all-jokes-title",
+                    level: 2,
+                    textContent: "Here are the jokes!"
+                });
+                
+				// create a section to hold our content
+                var jokesSection = createSection({
+                     id: "all-jokes",
+                     children: [ jokesHeading ]
+                });
+                
+                // get all the joke elements.
+                var xml = xhr.responseXML;                
+				allJokes = xml.querySelectorAll('joke');
+                // By using a const destructuring we ensure nothing changes the data while we're iterating over the array.
+                // Using array destructuring, we can access both index and value from the array's key/value pair.
+				for(const [index, node] of allJokes.entries()) {
+                    // node is the current <joke> in the array.
+                    // joke is the object created by searching the XML node.
+                    let joke = createJoke({
+                        id: `joke-${index}`,
+                        node,
+                        components: ['question', 'answer'],
+                        attributes: ['rating']
+                    });
+                                                            
+                    // Creates the div, h3, p1, p2, and em, all below.
+                    joke.element = createHTMLElement({                        
+                        // div settings.
+                        id: `${joke.id}`,
+                        selector: 'div',
+                        classList: [ 'joke' ],
+                        children: [ 
+                            // children are appended in the order they appear.
+                            
+                            // create heading
+                            // div#joke-[id].joke > h3#joke-[id]-title.joke-question
+                            createHeading({
+                                id: `${joke.id}-title`,
+                                level: 3,
+                                textContent: joke.question,
+                                classList: [ 'joke-question' ]
+                            }),
+                            // end heading
+                            
+                            // create paragraph 1
+                            // div#joke-[id].joke > p#joke-[id]-answer.joke-answer
+                            createParagraph({
+                                id: `${joke.id}-answer`,
+                                classList: [ 'joke-answer' ],
+                                children: [      
+                                    
+                                    // wrap the answer in an emphasis block, div > p#joke-[id]-answer.joke-answer > em
+                                    createHTMLElement({
+                                        selector: 'em',
+                                        textContent: joke.answer,
+                                    }) 
+                                    // end text block
+                                    
+                                ]
+                            }),
+                            // end paragraph 1
+                            
+                            // create paragraph 2
+                            // div#joke-[id].joke > p#joke-[id]-rating.joke-rating
+                            createParagraph({
+                                id: `${joke.id}-rating`,
+                                classList: [ 'joke-rating' ],
+                                textContent: `Rating = ${joke.rating}`                                
+                            })
+                            // end paragraph 2
+                            
+                        ]
+                        // end div
+                    });
+                                                                                
+                    // appends this element to the joke section.
+                    // section#all-jokes > div#joke-[id].joke > ...
+                    addChild.call(jokesSection, joke.element);    
+                }
+                
+                // add section to the content.
+                let content = document.querySelector('#content');
+                content.innerHTML = "";
+                addChild.call(content, jokesSection);
+                                
+                // document.querySelector('#content').innerHTML = "There are " + allJokes.length + " jokes!";
+			}
+			
+            var root = "media/";
+            var filename = "jokes-data.xml";
+			var url = `${root}${filename}`;
+			xhr.open('GET',url,true);
+			// try to prevent browser caching by sending a header to the server
+			xhr.setRequestHeader("If-Modified-Since", "Sat, 1 Jan 2010 00:00:00 GMT");
+			xhr.send();
+		}
+		
+		
+	
+	}())
+	</script>
+</head>
+<body>
+	<h1>Jokes!</h1>
+	<p><button id='mybutton'>Fetch Data</button></p>
+	<div id='content'></div>
+	
+</body>
+</html>
