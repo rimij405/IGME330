@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>XHR JSON Example (MOVIES)</title>
+	<style>
+		* {
+			font-family:tahoma,verdana,sans-serif;
+		}
+        
+        body {
+            margin: 0px 50px;
+        }
+        
+        .movie {
+            margin: 15px 15px 15px 0px;
+            padding: 15px;
+            border: 1px solid black;
+        }  
+	</style>
+	<script>
+	(function(){
+		"use strict";
+		window.onload = init;
+		
+		function init(){
+			document.querySelector('#mybutton').onclick = loadData;
+		}
+		        
+        // append classes to the element.
+        function appendClasses(classList = []){
+            for(const cl of classList) {
+                console.log(`Adding class ${cl} to element ${this}.`);
+                appendClass.call(this, cl);
+            }
+            console.dir(this);
+        }        
+        
+        // append a single class to an element.
+        function appendClass(cl = ""){
+            let className = cl.trim();
+            if(className.length > 0) { this.classList.add(className); };            
+        }
+        
+        // append children to an element.
+        function appendChildren(children = []){  
+            for(const childNode of children) {
+                console.dir(childNode);
+                console.log(`Adding child ${childNode} to parent element ${this}.`);
+                addChild.call(this, childNode);
+            }
+            console.dir(this);
+            return this;
+        }
+        
+        // append a single child to an element.\
+        function addChild(childNode){
+            console.dir(childNode);
+            console.log(`Adding child: ${childNode}`);
+            if(childNode != null) { this.appendChild(childNode); };
+            return this; // for method chaining.
+        }
+        
+        // create a div element.
+        function createHTMLElement({id = "", selector = "", textContent = "", children = [], classList = []}) {
+            let element = document.createElement(selector);
+            if(id != null && id.trim().length > 0) { element.id = id.trim(); }
+            element.textContent = textContent;
+            
+            // will only work if there are any children at all, anyway.
+            // receives closure from createHTMLElement, allowing us to pass in our element and the children.
+            appendChildren.call(element, children);
+            appendClasses.call(element, classList);
+            
+            // returns the newly created element.
+            return element;
+        }
+        
+        // create a paragraph element.
+        function createParagraph({id = "", textContent = "", children = [], classList = []}){
+            return createHTMLElement({id, selector: 'p', textContent, children, classList});
+        }
+        
+        // create a heading element.
+        function createHeading({id = "", level = 1, textContent = "", children = [], classList = []} = {}){        
+            
+            // create selector for a heading.
+            let selector = ((l) => {
+                return `h${((l <= 6 && l >= 1) ? l : 1)}`;
+            })(level);
+                                        
+            // return the created HTML DOM element.
+            return createHTMLElement({id, selector, textContent, children, classList});
+        }
+        
+        // create a section element.
+        function createSection({id = "", textContent = "", children = [], classList = []} = {}){
+            return createHTMLElement({id, selector: 'section', textContent, children, classList});
+        }      
+        
+		function loadData(){
+			var xhr = new XMLHttpRequest();
+			xhr.onload = function(){
+				// JSON.parse() converts a string to JSON.
+ 				var myJSON = JSON.parse( xhr.responseText );
+ 				
+ 			    //	var myJSON = eval('(' + xhr.responseText + ')');
+ 				var allMovies = myJSON.movies;
+				// document.querySelector('#content').innerHTML = "There are " + allMovies.length + " movies!";
+				let section = createSection({id: 'movies'});
+                
+                for(let i = 0; i < allMovies.length; i++){
+                    let movie = allMovies[i];
+                    
+                    let div = createHTMLElement({id: `movie-${i}`, selector: `div`, classList: [ `movie` ]});
+                    let h3 = createHeading({id: `movie-title-${i}`, level: 3, textContent: `${movie.title}`});
+                    let para1 = createParagraph({id: `movie-para-1:${i}`});                
+                    let em = createHTMLElement({selector: `em`, textContent: `${movie.actor}`});
+                    let para2 = createParagraph({id: `movie-para-2:${i}`, textContent: `${movie.rating}`});
+                    
+                    addChild.call(para1, em);      
+                    appendChildren.call(div, [h3, para1, para2]);
+                    addChild.call(section, div);
+                }
+                
+                let content = document.querySelector('#content');
+                content.innerHTML = "";
+                addChild.call(content, section);				
+			}
+			
+			var url = "movies.json";
+			xhr.open('GET',url,true);
+			// try to prevent browser caching by sending a header to the server
+			xhr.setRequestHeader("If-Modified-Since", "Sat, 1 Jan 2010 00:00:00 GMT");
+			xhr.send();
+		}
+		
+		
+	
+	}())
+	</script>
+</head>
+<body>
+	<h1>Movies!</h1>
+	<p><button id='mybutton'>See IMDB's Top Rated Movies!</button></p>
+	<div id='content'></div>
+	
+</body>
+</html>
