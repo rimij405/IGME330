@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+ 	<link href='https://fonts.googleapis.com/css?family=Do+Hyeon' rel='stylesheet' type='text/css'>
+ 	<title>EventJaunt&trade;</title> 	
+    <style>
+        
+        *{
+            font-family: 'Do Hyeon', sans-serif;
+        }
+
+        html, body {
+            min-width: 320px;
+            margin: 30px;
+        }
+        
+        h1{
+            color:#e4685d;
+        }
+
+        hr { margin: 0px; }
+        
+        .eventDiv, .event {
+            min-width: 320px;
+            max-width: 720px;
+            padding: 25px;            
+            background: #efa59f;
+            border: 5px solid transparent;   
+            box-shadow: 5px 5px 2px 1px #ddd;
+            margin: 5px;
+            margin-bottom: 15px;
+            transition:
+                padding 0.3s, 
+                border-color 0.3s,
+                background 0.3s,
+                box-shadow 0.3s;
+        }
+        
+        .event:hover {
+            background: #fff;
+            padding-top: 27px;
+            padding-bottom: 27px;
+            padding-left: 27px;
+            border: 5px solid #efa59f;   
+            box-shadow: 5px 5px 2px 2px #e4685d;
+            transition:
+                padding 0.3s,
+                border-color 0.3s,
+                background 0.3s,
+                box-shadow 0.3s;
+        }
+        
+        .event p, 
+        .event h1,
+        .event h2,
+        .event h3,
+        .event h4,
+        .event h5,
+        .event h6,
+        .event div,
+        .event img {
+            margin: auto 0px;
+            padding: 10px;
+        }
+        
+        #content{
+            margin-left: 5%;
+            margin-right:5%;
+            background-color:#FFF5EE;
+            min-height:500px;
+            border:1px solid gray;
+        }
+
+        #search{
+            box-shadow:inset 0px 1px 0px 0px #f7c5c0;
+            background:linear-gradient(to bottom, #fc8d83 5%, #e4685d 100%);
+            background-color:#fc8d83;
+            border-radius:6px;
+            border:1px solid #d83526;
+            display:inline-block;
+            cursor:pointer;
+            color:#ffffff;
+            font-size:15px;
+            font-weight:bold;
+            padding:6px 24px;
+            text-decoration:none;
+            text-shadow:0px 1px 0px #b23e35;
+            margin-right:2em;
+        }
+
+
+        #search:hover {
+            background:linear-gradient(to bottom, #e4685d 5%, #fc8d83 100%);
+            background-color:#e4685d;
+        }
+
+
+        #search:active {
+            position:relative;
+            top:1px;
+        }
+
+
+        #searchterm{
+            font-size:16px;
+        }
+
+        img{
+            padding:7px;
+            border:1px solid black;
+            background-color:white;
+        }
+        
+    </style>  
+    
+    <!-- Import jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+
+    <!-- Assignment -->
+    <script>
+        
+        "use strict";
+
+        var EVENTFUL_URL = "https://api.eventful.com/json/events/search?callback=jsonLoaded&app_key="
+        var API_KEY = "9qWbhfhgnq6dc6Hj";
+        var value;
+        const empty = {}; // used for event's prototypical inheritance.
+        window.onload = init;
+
+        // Service classes.
+        
+        // Add a single class to a DOM element that calls this function.
+        function addClass(classItem = ""){
+            if(typeof classItem === 'string'){
+                this.classList.add(classItem);
+            }
+            return this; // chaining reference.
+        }
+        
+        // Add a list of classes to a DOM element that calls this function.
+        function addClasses(classList = []){
+            if(classList instanceof Array){
+                for(let cl of classList) {
+                    addClass.call(this, cl);
+                } 
+            }
+            return this; // chaining reference.
+        }
+        
+        // Add a single child to a DOM element that calls this function.
+        function addChild(child) {
+            if(child){
+                this.appendChild(child);
+            }
+            return this; // chaining reference.
+        }
+                
+        // Add an attribute.
+        function addAttribute(key, value){
+            if(key && value){
+                let attrib = document.createAttribute(key);
+                attrib.value = value;
+                this.setAttributeNode(attrib);
+            }
+            return this; // chaining reference.
+        }
+                
+        // Add a list of children to a DOM element that calls this function.
+        function addChildren(children = []){
+            if(children instanceof Array){
+                for(let child of children){
+                    addChild.call(this, child);
+                }
+            }
+            return this; // chaining reference.
+        }
+        
+        // Assign text content to an element.
+        function setText(textContent = ""){
+            this.textContent = textContent ? textContent : this.textContent;
+            return this; // chaining reference.
+        }
+        
+        // Assign an image source to an element.
+        function setSource(src = ""){
+            this.src = src ? src : this.src;
+            return this; // chaining reference.
+        }
+                
+        // Assign title to an element.
+        function setTitle(title = "") {
+            this.title = title ? title : this.title;
+            return this; // chaining reference.
+        }
+
+        // Assign anchor URI to an element.
+        function setURI(uri = "") {
+            this.href = uri ? uri : this.href;
+            return this; // chaining reference.
+        }
+        
+        // Assign an id to the DOM element that calls this function.
+        function setID(id = ""){
+            this.id = id ? id : this.id;
+            return this; // chaining reference.
+        }
+        
+        // Set the innerHTML for an element.
+        function setInnerHTML(content = ""){
+            this.innerHTML = content ? content : this.innerHTML;
+            return this; // chaining reference.
+        }
+        
+        // Factory functions.
+        
+        // Build a DOM element and return it.
+        function createDOMElement({selector = "div", id = "", innerHTML = "", classList = [], children = []} = {}){
+            if(selector == null) { return null; } // can't make an element without a selector.
+            let element = document.createElement(selector);
+            setInnerHTML.call(element, innerHTML);
+            addClasses.call(element, classList);
+            addChildren.call(element, children);
+            return setID.call(element, id); // return element.
+        }
+        
+        // Create a heading object.
+        function createHeading({level = 1, textContent = "", id = "", classList = [], children = []} = {}) {
+            // clamp level between 1 and 6.
+            if(level < 1) { level = 1; }
+            if(level > 6) { level = 6; }
+            
+            let selector = `h${level}`;
+            let element = createDOMElement({selector, id, classList, children});
+            return setText.call(element, textContent);
+        }
+                
+        // Create a paragraph object.
+        function createParagraph({id = "", textContent = "", classList = [], children = []}){
+            let selector = `p`;
+            let element = createDOMElement({selector, id, classList, children});
+            return setInnerHTML.call(element, textContent); // return element.
+        }
+        
+        // Create a div object.
+        function createDIV({id = "", classList = [], children = []}){
+            let selector = `div`;
+            return createDOMElement({selector, id, classList, children});
+        }
+        
+        // Create a image object.
+        function createImage({src = "", id = "", classList = [], children = []}){
+            let selector = `img`;
+            let element = createDOMElement({selector, id, classList, children});
+            return setSource.call(element, src); // return element.
+        }
+        
+        // Create an anchor tag.
+        function createHyperlink({href = "", title = "", textContent = "", id = "", classList = [], children = []}){
+            let selector = `a`;
+            let element = createDOMElement({selector, id, classList, children});
+            setTitle.call(element, title);
+            setText.call(element, textContent);
+            return setURI.call(element, href);            
+        }        
+        
+        // Create an event info object.
+        function createInfo(
+            index,
+            title,
+            description,
+            start_time,
+            image,
+            link,
+            venue
+        ){
+            return {
+                index,
+                title,
+                description,
+                start_time,
+                image,
+                link,
+                venue
+            };
+        }
+        
+        // Create an event object.
+        function createEvent(info = {}){
+            let element = undefined;
+            if(info){
+                element = new Event(info);
+            }
+            return element;
+        }
+        
+        // Create a collection of event objects.
+        function createEvents(metadata = []){
+            let events = [];            
+            for(let info of metadata){
+                events.push(createEvent(info));
+            }
+            return events;
+        }
+        
+        // An event object.
+        function Event({ index, 
+                         title = "Event Title",
+                         description = undefined,
+                         start_time = "1970-01-01 00:00:00",
+                         image = undefined,
+                         link = undefined,
+                         venue = undefined
+                        } = {}) {      
+            this.index = index;
+            this.title = title;
+            this.description = description ? description : "No description found.<br/>";
+            this.start_time = start_time;
+            this.image = image ? `https:${image}` : undefined;
+            this.link = link;     
+            this.venue = venue ? venue : "Unspecified venue.";
+        }  
+        
+        Event.prototype = Object.create({}, {
+            "toString": {
+                value: function() {
+                    return `Event ${this.index}: ${this.start_time}\n`  
+                        + `"${this.title}"\n` 
+                        + `--------------\n` 
+                        + `${this.description}\n`
+                        + `Link: [${this.link}]\n`
+                        + `Image: [${this.image}]\n`;                    
+                },
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },            
+            "createDOMEntry": {
+                // Create a DOM event entry.
+                value: function() {
+                                 
+                    // Elements to add to the section.
+                    let allChildren = [];
+                    
+                    // Create heading for the title and venue.
+                    let heading = createHeading({
+                        level: 3,
+                        id: `event-title-${this.index}`,
+                        textContent: `"${this.title}" at ${this.venue}`,
+                        classList: [ 'event-title' ]
+                    });
+                    allChildren.push(heading);                    
+                    
+                    // Create paragraph for the description.
+                    let para1 = createParagraph({
+                        id: `event-content-${this.index}`,
+                        textContent: `${this.description}`,
+                        classList: [ 'event-content' ]
+                    });
+                    allChildren.push(para1);   
+                    
+                    // Create paragraph for the start time.
+                    let para2 = createParagraph({
+                        id: `event-time-${this.index}`,
+                        textContent: `${this.start_time}`,
+                        classList: [ 'event-content' ]
+                    });
+                    allChildren.push(para2);   
+                    
+                    // Create the image for the event.
+                    if(this.hasImage()){
+                        let image = createImage({
+                            src: `${this.image}`,
+                            id: `event-image-${this.index}`,
+                            classList: [ 'event-image' ]
+                        });                        
+                        allChildren.push(image);   
+                    }
+                    
+                    // Create the link for the event.
+                    if(this.hasLink()){
+                        let link = createHyperlink({
+                            href: `${this.link}`,
+                            textContent: `See this event`,
+                            title: `Link to event page for "${this.title}".`
+                        })
+                        let para3 = createParagraph({
+                            id: `event-link-${this.index}`,
+                            classList: [ 'event-link' ],
+                            children: [ link ]                            
+                        });
+                        allChildren.push(para3);
+                    }
+                                        
+                    // Create a section for the event.
+                    let section = createDIV({
+                        id: `event-${this.getIndex()}`,
+                        children: allChildren,
+                        classList: [ 'event' ]
+                    });
+                    
+                    let wrapper = createDIV({
+                        children: [ section ]
+                    });
+                    
+                    return wrapper;                    
+                },
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },             
+            "getIndex": {
+                // Return property value.
+                value: function (){
+                    return this.index;
+                },
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },           
+            "setIndex": {
+                // Return property value.
+                value: function (value){
+                    if(typeof value === 'number'){
+                        this.index = value ? value : this.index;
+                    }
+                },
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },   
+            "hasVenue": {
+                // Check if property exists.
+                value: function (){
+                    return (this.venue != null);
+                },
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },            
+            "getVenue": {
+                // Return property value.
+                value: function (){
+                    return this.venue;
+                },
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },             
+            "setVenue": {
+                // Overwrite property value.
+                value: function (value){
+                    this.venue = value ? value.trim() : this.venue;
+                    return this;
+                },
+                enumerable: false,
+                writable: false,
+                configurable: false
+            }, 
+            "hasTitle": {
+                // Check if property exists.
+                value: function (){
+                    return (this.title != null);
+                },
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },            
+            "getTitle": {
+                // Return property value.
+                value: function (){
+                    return this.title;
+                },
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },             
+            "setTitle": {
+                // Overwrite property value.
+                value: function (value){
+                    this.title =  value ? value.trim() : this.title;
+                    return this;
+                },
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+            "hasDescription": {
+                // Check if property exists.
+                value: function (){
+                    return (this.description != null);
+                },
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },            
+            "getDescription": {
+                // Return property value.
+                value: function (){
+                    return this.description;
+                },
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },             
+            "setDescription": {
+                // Overwrite property value.
+                value: function (value){
+                    this.description =  value ? value.trim() : this.description;
+                    return this;
+                },
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+            "hasStartTime": {
+                // Check if property exists.
+                value: function (){
+                    return (this.start_time != null);
+                },
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },            
+            "getStartTime": {
+                // Return property value.
+                value: function (){
+                    return this.start_time;
+                },
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },             
+            "setStartTime": {
+                // Overwrite property value.
+                value: function (value){
+                    this.start_time =  value ? value.trim() : this.start_time;
+                    return this;
+                },
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+            "hasImage": {
+                // Check if property exists.
+                value: function (){
+                    return (this.image != null);
+                },
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },            
+            "getImage": {
+                // Return property value.
+                value: function (){
+                    return this.image;
+                },
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },             
+            "setImage": {
+                // Overwrite property value.
+                value: function (value){
+                    this.image =  value ? value.trim() : this.image;
+                    return this;
+                },
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+            "hasLink": {
+                // Check if property exists.
+                value: function (){
+                    return (this.link != null);
+                },
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },            
+            "getLink": {
+                // Return property value.
+                value: function (){
+                    return this.link;
+                },
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },             
+            "setLink": {
+                // Overwrite property value.
+                value: function (value){
+                    this.link =  value ? value.trim() : this.link;
+                    return this;
+                },
+                enumerable: false,
+                writable: false,
+                configurable: false
+            }
+        });
+        
+        function init(){
+            document.querySelector("#search").onclick = getData;
+        }
+
+        // MY FUNCTIONS
+        function getData(){
+            // build up our URL string
+            var url = EVENTFUL_URL; 
+            url += API_KEY;
+            url += "&location=";
+
+            // get value of form field
+            value = document.querySelector("#searchterm").value;
+
+            // get rid of any leading and trailing spaces
+            value = value.trim();
+
+            // if there's no band to search then bail out of the function
+            if(value.length < 1) return;
+
+            document.querySelector("#dynamicContent").innerHTML = "<b>Searching for " + value + "</b>";
+
+            // replace spaces the user typed in the middle of the term with %20
+            // %20 is the hexadecimal value for a space
+            value = encodeURI(value); 
+
+            // finally, add the artist name to the end of the string
+            url += value;
+
+            // call the web service, and download the file
+            console.log("loading " + url);
+            $("#content").fadeOut(1000);
+            $.ajax({
+              dataType: "jsonp",
+              url: url,
+              data: null,
+              success: jsonLoaded
+            });
+        }
+
+
+        function jsonLoaded(obj){
+            console.log("obj = " +obj);
+            // console.log("obj stringified = " + JSON.stringify(obj));
+
+            // if there's an error, print a message and return
+            if(obj.error){
+                var status = obj.status;
+                var description = obj.description;
+                document.querySelector("#dynamicContent").innerHTML = "<h3><b>Error!</b></h3>" + "<p><i>" + status + "</i><p>" + "<p><i>" + description + "</i><p>";
+                $("#dynamicContent").fadeIn(500);
+                return; // Bail out
+            }
+
+            // if there are no results, print a message and return
+            if(obj.total_items == 0){
+                var status = "No results found";
+                document.querySelector("#dynamicContent").innerHTML = "<p><i>" + status + "</i><p>" + "<p><i>";
+                $("#dynamicContent").fadeIn(500);
+                return; // Bail out
+            }
+
+            // If there is an array of results, loop through them
+            var allEvents = obj.events.event;
+
+            // If a single object, replace with an array that is one object long.
+            if(allEvents.length === undefined){
+                allEvents = [ obj.events.event ];
+            }
+
+            console.log("allEvents.length = " + allEvents.length);
+            var bigString = "<p><b>There are " + allEvents.length + " events for " + value + "</b></p>";
+            bigString += "<hr />";
+
+            // loop through events here
+            // concatenate HTML to bigString as necessary	
+            
+            let eventHTML = "";
+            let index = 0;
+            for(let eventNode of allEvents){                
+                console.dir(eventNode);
+                console.log(`JSON Node: ${eventNode}`);
+                
+                // Create event object
+                let info = createInfo(
+                    index, 
+                    eventNode.title,
+                    eventNode.description,
+                    Date(Date.parse(eventNode.start_time)),
+                    undefined, // we'll add the image later on since it may not exist.
+                    eventNode.url,
+                    eventNode.venue_name
+                );
+                
+                if(eventNode.image){
+                    if(eventNode.image.thumb){
+                        info.image = eventNode.image.thumb.url;
+                    }
+                }
+                
+                console.dir(info);
+                console.log(`Info: ${info}`);
+                
+                let event = createEvent(info);
+                
+                console.dir(event);
+                console.log(`Event (Object): ${event}`);
+                
+                eventHTML += event.createDOMEntry().innerHTML;
+                index++;
+            }
+                            
+            bigString += eventHTML;
+
+            document.querySelector("#dynamicContent").innerHTML = bigString;
+            $("#dynamicContent").fadeIn(500);
+        }	
+
+        
+    </script>
+    
+</head>
+<body>
+    <h1>EventJaunt&trade;</h1>
+    <img src="http://igm.rit.edu/~acjvks/courses/2014-fall/330/files/i/anime-girl.jpg" alt="anime girl">
+    <p><i>Your indispensable event finding service!</i></p>
+
+    <button type="button" id="search">Get Event!<br />:-)</button>
+    What is your location? -&gt; <input id="searchterm" type="text" size="20" maxlength="20" autofocus value="Rochester" /> 
+
+    <h2>Results</h2>
+    <div id="dynamicContent">
+    <p>No data yet!</p>
+    </div>
+</body>
+</html>
