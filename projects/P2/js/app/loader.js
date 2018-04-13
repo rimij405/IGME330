@@ -24,27 +24,15 @@ window.onload = function() {
 window.onblur = function() {
     app.debug.print('blur at' + Date());
     app.main.pause(); 
+    keystrokes.reset();
 }
 
 // On regain of focus
 window.onfocus = function() {
     app.debug.print('focus at ' + Date());
     app.main.resume();    
+    keystrokes.reset();
 }
-
-let vec0 = new Vector2(10, 10);
-let vec1 = new Vector2(0, 0);
-
-app.debug.print(`[0]: ${vec0}`);
-app.debug.print(`[1]: ${vec1}`);
-
-let mag0 = vec0.magnitude();
-let vec3 = vec0.norm();
-let mag3 = vec3.magnitude();
-
-app.debug.print(`[0]: ${mag0} - ${vec0}`);
-app.debug.print(`[3]: ${mag3} - ${vec3}`);
-
 
 // Data holds resource and property information for the game.
 app.data = (function(){

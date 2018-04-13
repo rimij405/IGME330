@@ -204,6 +204,23 @@ app.main = (function (title = 'Main') {
             .initGraphics()
             .initTimer();
         
+        // test functionality.
+        let e1 = app.factory.entity.create();
+        let e2 = app.factory.entity.create({id: "test", position: Vector2.create(10, 10)});
+        let e3 = app.factory.entity.createMover({id: "mover", velocity: Vector2.create()});
+        
+        
+        debug.print(`${e1}`);   
+        debug.dir(e1);        
+
+        debug.print(`${e2}`);
+        debug.dir(e2);
+        
+        debug.print(`${e3}`);
+        debug.dir(e3);
+        
+        
+        
         // Print debug information.
         // props.debugCanvas().debugContext().debugGraphics();
         props.debugTimer();
@@ -282,11 +299,17 @@ app.main = (function (title = 'Main') {
         options.animationID = requestAnimationFrame(update);
 
     }
+    
+    // check if main method is paused.
+    function isPaused() {
+        return options.paused;
+    }
         
     return {
         name,
         init,
         pause,
-        resume
+        resume,
+        isPaused
     };    
 }());
